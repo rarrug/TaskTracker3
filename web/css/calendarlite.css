@@ -1,0 +1,57 @@
+.table {
+    border:2px solid #4A4F45;
+    font-size: 12px;
+    background-color: azure;
+    color: #EFEFEF;
+    width: 145px;
+}
+.table td {
+    background-color: #eeeeee;
+    text-align: center;
+    padding:3px;
+    border: 1px solid black;
+}
+/* Current date */
+.table .curr { background-color: #EFDC0E;}
+
+/* Weekend  */
+.table .weekend { background-color: lightgreen;}
+
+/* Cell link */
+.table td a {
+    text-decoration: none; 
+    color: #2F2F2F;
+}
+
+/* Cell link hover */
+.table td:hover {background-color: #aaccee;}
+
+div.monthName {
+    color: azure;
+    border: 1px solid azure;
+}
+/* Name of the selected month (at the top) */
+.monthName {
+    margin: 2px; 
+    text-align: center; 
+    font-size: 11px;
+}
+
+/* Next-Prev arrows */
+.monthName a {
+    color: #111111; 
+    text-decoration:none; 
+}
+.next {
+    color: azure;
+    float:right;
+}
+.prev {
+    color: azure;
+    float:left;
+}
+
+pre {
+    background-color: #eeeeee; 
+    font-size:12px;
+}

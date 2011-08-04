@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE datasources PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "dataSource.dtd">
+<datasources>
+    <datasource>
+        <source-name>Oracle</source-name>
+        <connection-url>jdbc:oracle:thin:@localhost:1521:xe</connection-url>
+        <driver-class>oracle.jdbc.driver.OracleDriver</driver-class>
+        <user-name>system</user-name>
+        <password>system</password>
+    </datasource>
+</datasources>
