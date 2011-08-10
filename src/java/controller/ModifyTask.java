@@ -1,6 +1,6 @@
 package controller;
 
-import model.Operations;
+import model.DBModel;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;

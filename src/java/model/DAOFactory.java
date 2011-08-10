@@ -26,7 +26,7 @@ public class DAOFactory {
         IModel model = null;
         switch (factoryType) {
             case 1:
-                model = new Operations();
+                model = new DBModel();
                 break;
         }
         return model;

@@ -1,6 +1,6 @@
 package controller;
 
-import model.Operations;
+import model.DBModel;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import model.AppProperties;

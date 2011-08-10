@@ -1,7 +1,7 @@
 package controller;
 
 import java.sql.SQLException;
-import model.Operations;
+import model.DBModel;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
