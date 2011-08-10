@@ -15,9 +15,10 @@ public class Task {
     private Date end;//end date
     private String status;//status
     private String dept;//deparment
+    private String description;
 
     public Task(int id, String name, int parentId, Date begin,
-            Date end, String status, String emp, String dept) {
+            Date end, String status, String emp, String dept, String description) {
         this.id = id;
         this.name = name;
         this.parentId = parentId;
@@ -26,6 +27,15 @@ public class Task {
         this.status = status;
         this.emp = emp;
         this.dept = dept;
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public Date getDateBegin() {
@@ -95,7 +105,7 @@ public class Task {
     public String toString() {
         return "" + getId() + " - " + getName() + " - " + getParentId() + " - "
                 + getDateBegin() + " - " + getDateEnd()
-                + " - " + getStatus() + " - " + getEmp() + " - " + getDept();
+                + " - " + getStatus() + " - " + getEmp() + " - " + getDept() + " - " + getDescription();
     }
 
     public int hashCode() {

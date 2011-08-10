@@ -1,24 +1,28 @@
 package model;
 
-
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Save list of tasks
  */
-public class TaskList {
+public class TaskList implements Iterable<Task> {
 
     /* List of tasks */
-    private ArrayList<Task> taskList;
+    private Map<Integer, Task> list;
 
     public TaskList() {
-        taskList = new ArrayList<Task>();
+        list = new HashMap<Integer, Task>();
     }
 
-    public TaskList(Collection<Task> c) {
-        taskList = new ArrayList<Task>(c);
+    public TaskList(Collection<Task> tasks) {
+        list = new TreeMap<Integer, Task>();
+        for (Task task : tasks) {
+            list.put(new Integer(task.getId()), task);
+        }
     }
 
     /**
@@ -26,28 +30,46 @@ public class TaskList {
      * @param id 
      */
     public void removeByID(int id) {
-        for(int index=0; index<taskList.size(); index++) {
-            Task task = taskList.get(index);
-            if (task.getId() == id) {
-                taskList.remove(index);
-                break;
-            }
-        }
+        list.remove(new Integer(id));
     }
 
     /**
-     * Remove all tasks
+     * Remove all tasks from list
      */
     public void removeAll() {
-        taskList.clear();
+        list.clear();
     }
 
     /**
-     * Get task list
-     * @return  Task list as List interfase
+     * Check is empty list
+     * @return true if list is empty or false another
      */
-    public List<Task> getTaskList() {
-        return taskList;
+    public boolean isEmpty() {
+        return list.isEmpty();
     }
 
+    /**
+     * Return tasks count in list
+     * @return Tasks count 
+     */
+    public int size() {
+        return list.size();
+    }
+
+    /**
+     * Iterator for tasks list
+     * @return Iterator
+     */
+    public Iterator<Task> iterator() {
+        return list.values().iterator();
+
+    }
+
+    /**
+     * Generate list of tasks from map
+     * @return List of tasks
+     */
+    public Collection<Task> asList() {
+        return list.values();
+    }
 }
