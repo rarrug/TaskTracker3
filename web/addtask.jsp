@@ -1,11 +1,10 @@
-<%@page import="controller.Operations"%>
 <!-- add block -->
 
 <div id="basic-modal-content-add">
 
     <h3>Add task</h3>
 
-    <div class="block-show" id="add-block" title="Add task">
+    <div id="add-block" title="Add task">
         <form action="addtask.perform" method="post">
             <div class="add-block-label">Name:</div>
             <input type="text" name="taskName" value="default"/>
@@ -15,7 +14,7 @@
             <select name="taskParent">
                 <option value="null">no</option>
                 <%
-                    for (Task parentTask : taskList.getTaskList()) {
+                    for (Task parentTask : taskList) {
                 %>
                 <option value="<%=parentTask.getName()%>"><%=parentTask.getName()%></option>
                 <%  }%>
@@ -26,25 +25,23 @@
             <select name="taskUser">
                 <%
                     /* generate user list from task list */
-                    Operations.connect(Operations.SETTINGS_FILE);
-                    for (String user : Operations.getAllUsers()) {
+                    for (String user : DAOFactory.getInstance().getUserList()) {
                 %>
                 <option value="<%=user%>"><%=user%></option>
                 <%
                     }
-                    Operations.disconnect();
                 %>
             </select>
 
             <br style="float:none;"/>
             <div class="add-block-label">Begin:</div>
-            <input type="text" name="taskBegin" value="2011-11-17" id="calendarBeginA" />
+            <input type="text" name="taskBegin" value="2011-11-17" id="calendarBeginA" readonly="true"/>
 
             <div id="cCallbackBeginA" class="select-free"></div>
 
             <br style="float:none;"/>
             <div class="add-block-label">End:</div>
-            <input type="text" name="taskEnd" value="2011-11-17" id="calendarEndA"/>
+            <input type="text" name="taskEnd" value="2011-11-17" id="calendarEndA" readonly="true"/>
 
             <div id="cCallbackEndA" class="select-free"></div>
 
@@ -55,6 +52,11 @@
                 <option value="process">process</option>
                 <option value="close">close</option>
             </select>
+
+            <br style="float:none;"/>
+            <div class="add-block-label">Description:</div>
+            <br style="float:none;"/>
+            <textarea name="taskDescription">...</textarea>
 
             <br style="float:none;"/>
             <input type="submit" name="taskAdd" value="Add" id="addButton"/>

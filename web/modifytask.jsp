@@ -1,4 +1,3 @@
-<%@page import="controller.Operations"%>
 <!-- modify block -->
 
 <div id="basic-modal-content-modify">
@@ -15,8 +14,9 @@
         String status = "";
         String emp = "";
         int parentId = 0;
+        String descr = "";
 
-        for (Task task : taskList.getTaskList()) {
+        for (Task task : taskList) {
 
             if ((task.getId() + "").equals(id)) {
                 name = task.getName();
@@ -25,6 +25,9 @@
                 status = task.getStatus();
                 emp = task.getEmp();
                 parentId = task.getParentId();
+                if (task.getDescription() != null) {
+                    descr = task.getDescription();
+                }
 
                 break;
                 //out.println(name + " - " + begin + " - " + end + " - " + status + " - " + emp + " - " + parentId);
@@ -52,7 +55,7 @@
                     }%>>no
                 </option>
                 <%
-                    for (Task parentTask : taskList.getTaskList()) {
+                    for (Task parentTask : taskList) {
                         if (parentTask.getId() != Integer.parseInt(id)) {
                 %>
                 <option value="<%=parentTask.getName()%>" 
@@ -70,8 +73,7 @@
             <select name="modifyUser">
                 <%
                     /* generate user list from task list */
-                    Operations.connect(Operations.SETTINGS_FILE);
-                    for (String user : Operations.getAllUsers()) {
+                    for (String user : DAOFactory.getInstance().getUserList()) {
                 %>
                 <option value="<%=user%>" 
                         <% if (emp.equals(user)) {
@@ -81,19 +83,18 @@
                 </option>
                 <%
                     }
-                    Operations.disconnect();
                 %>
             </select>
 
             <br/>
             <div class="modify-block-label">Begin:</div>
-            <input type="text" name="modifyBegin" value="<%=begin%>" id="calendarBeginM"/>
+            <input type="text" name="modifyBegin" value="<%=begin%>" id="calendarBeginM" readonly="true"/>
 
             <div id="cCallbackBeginM" class="select-free"></div>
 
             <br/>
             <div class="modify-block-label">End:</div>
-            <input type="text" name="modifyEnd" value="<%=end%>" id="calendarEndM"/>
+            <input type="text" name="modifyEnd" value="<%=end%>" id="calendarEndM" readonly="true"/>
 
             <div id="cCallbackEndM" class="select-free"></div>
 
@@ -110,6 +111,11 @@
                         out.println("selected");
                     }%>>close</option>
             </select>
+
+            <br style="float:none;"/>
+            <div class="modify-block-label">Description:</div>
+            <br style="float:none;"/>
+            <textarea name="modifyDescription"><%=descr%></textarea>
 
             <br/>
             <input type="submit" name="taskModify" value="Modify" id="modifyButton"/>

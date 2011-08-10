@@ -1,11 +1,12 @@
 
+<%@page import="java.util.Collection"%>
+<%@page import="java.util.ArrayList"%>
 <%@page import="org.apache.log4j.Logger"%>
-<%@page import="javax.swing.JOptionPane"%>
-<%@page import="actions.ShowTask"%>
+<%@page import="controller.ShowTask"%>
 <%@page import="java.util.TreeSet"%>
 <%@page import="java.util.Set"%>
 <%@page import="model.Task"%>
-<%@page import="model.TaskList" %>
+<%@page import="model.DAOFactory"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
@@ -13,6 +14,8 @@
 
 <html>
     <head>
+        <title>Task Tracker</title>
+
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
         <!-- Main page CSS file -->
@@ -53,7 +56,6 @@
         <!-- Calendar JS file -->
         <script type="text/javascript" src="js/jquery.calendarlite.js"></script>
 
-        <title>Task Tracker</title>
         <script type="text/javascript">
             
             var simpleTreeCollection;
@@ -132,17 +134,15 @@
 
         <%-- get parameters from request and session--%>
 
-        <jsp:useBean id="taskList" scope="session" class="model.TaskList" />
-
         <%
             /* Logger */
             final Logger logger = Logger.getLogger(this.getClass());
 
             try {
                 String userId = request.getParameter("taskid");
-                String findKind = request.getParameter("findKind");
-                String saveToFile = (String) session.getAttribute("saveToFile");
                 String hierarchy = (String) session.getAttribute("hierarchy");
+                String errMessage = (String) session.getAttribute("message");
+                Collection<Task> taskList = (Collection<Task>) session.getAttribute("taskList");
 
         %>
 
@@ -155,7 +155,7 @@
                 <p><a href="index.jsp?findKind=hier" class="menu-link">Show hierarchy</a></p>
                 <p id="find-label">Search</p>
                 <p id='basic-modal'><a href="#" class='basic-add menu-link'>Add task</a></p>
-                <p><a href="index.jsp?save=1" class="menu-link">Import</a></p>
+                <p><a href="savetask.perform" class="menu-link">Export to Outlook</a></p>
             </div>
             <div class='boxbottom'><div></div></div>
         </div>
@@ -163,6 +163,25 @@
         <!-- main content -->
 
         <div id="content">
+
+            <%
+                if (errMessage != null) {
+            %>
+            <script type="text/javascript">
+                $(document).ready(function() {
+                    var element = $('#content #message');
+                    //alert('class: ' + $('#content #messageType').text());
+                    element.hide().fadeIn(1000).delay(3000).fadeOut(1000);
+                    //alert($('#content #message').text());
+                });
+            </script>
+            <div id="message" class="<%=(String) session.getAttribute("messageType")%>"><%=errMessage%></div>
+            <%
+                    session.setAttribute("message", null);
+                    session.setAttribute("messageType", null);
+                }
+            %>
+
 
             <%-- show window if task must be modify (userId exists in url) --%>
 
@@ -195,15 +214,12 @@
 
             <%
                 /* output hierarchical structure of tasks */
-                out.println("<fieldset id=\"hierar-block\" title=\"Hierarchical structure\">");
+                out.println("<fieldset id=\"hierar-block\" class=\"block\" title=\"Hierarchical structure\">");
                 out.println("<legend>Hierarchical structure</legend>");
-                ShowTask.printHirerachicalStructure(out,
-                        (TaskList) session.getAttribute("hierarchyTaskList"));
+                ArrayList<Task> arrList = new ArrayList<Task>((Collection<Task>) session.getAttribute("hierarchyList"));
+                ShowTask.printHirerachicalStructure(out, arrList);
                 out.println("</fieldset>");
                 session.setAttribute("hierarchy", null);
-            } else if (saveToFile != null) {
-                ShowTask.generateImportFile(out, ((TaskList) session.getAttribute("taskList")).getTaskList());
-                session.setAttribute("saveToFile", null);
             } else {
                 logger.info("Show tasks");
             %>
@@ -214,62 +230,27 @@
                 <caption><b>Task table</b></caption>
                 <thead>
                     <tr>
-                        <th>
-                            ID 
-                        </th>
-                        <th>
-                            NAME 
-                        </th>
-                        <th>
-                            PARENT
-                        </th>
-                        <th>
-                            BEGIN
-                        </th>
-                        <th>
-                            END
-                        </th>
-                        <th>
-                            STATUS
-                        </th>
-                        <th>
-                            USER
-                        </th>
-                        <th>
-                            DEPT
-                        </th>
+                        <th>&nbsp;</th>
+                        <th>ID</th>
+                        <th>NAME</th>
+                        <th>PARENT</th>
+                        <th>BEGIN</th>
+                        <th>END</th>
+                        <th>STATUS</th>
+                        <th>USER</th>
+                        <th>DEPT</th>
+                        <th>DESCRIPTION</th>
                         <th>&nbsp;</th>
                     </tr>
                 </thead>
                 <tbody>
                     <%
                         /* output task list */
-
-                        taskList = (TaskList) session.getAttribute("taskList");
-                        for (Task task : taskList.getTaskList()) {
+                        for (Task task : taskList) {
                             session.setAttribute("task", task);
-
-                            /* output all tasks */
-                            if (findKind == null) {
-
                     %>
-
                     <jsp:include page="tasktable.jsp" />
-
-                    <%} else if (findKind != null) {
-                        /* output by find request (id, name, user)*/
-                        if ((findKind.equals("1") && (task.getId() + "").equals(session.getAttribute("findName")))
-                                || (findKind.equals("2") && task.getName().equals(session.getAttribute("findName")))
-                                || (findKind.equals("3") && task.getEmp().equals(session.getAttribute("findName")))) {
-                    %>
-
-                    <jsp:include page="tasktable.jsp" />
-
-                    <%}
-                            }
-                        }
-                        if (findKind != null) {
-                            session.setAttribute("findKind", null);
+                    <%
                         }
                     %>
                 </tbody></table>

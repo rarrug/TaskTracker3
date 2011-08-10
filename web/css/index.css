@@ -46,12 +46,19 @@ a:hover {
     margin: 0px;
 }
 
-#hierar-block, #find-block {
+.block {
     color: #4682B4;
     border: 2px solid #4682B4;
     border-radius: 8px;/* only CSS 3 */
     padding:10px;
     margin-bottom: 5px;
+}
+
+#hierar-block {
+    width: 500px;
+}
+
+#find-block {
     width: 300px;
 }
 
@@ -102,11 +109,19 @@ a:hover {
     width: 200px;
 }
 
+#basic-modal-content-add textarea, 
+#basic-modal-content-modify textarea {
+    color: #4682B4;
+    width: 265px;
+    height: 50px;
+    text-align: left;
+    resize: none;
+}
+
 input#modifyButton, input#addButton {
     width:100px; 
     margin-left:170px;
 }
-
 
 .select-free  {
     position:absolute;
@@ -128,4 +143,18 @@ input#modifyButton, input#addButton {
     filter:mask;/*must have*/
     width:3000px;/*must have for any big value*/
     height:3000px/*must have for any big value*/;
+}
+
+.successMessage {
+    color: green; 
+    background-color: #F0FFF0; 
+    border: 1px solid green;  
+    padding: 5px;
+}
+
+.failMessage {
+    color: red; 
+    background-color: #FFDAB9; 
+    border: 1px solid red;
+    padding: 5px;
 }

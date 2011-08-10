@@ -1,6 +1,6 @@
 <%-- search block --%>
 
-<fieldset class="block-hide" id="find-block" title="Search">
+<fieldset class="block block-hide" id="find-block" title="Search">
     <legend>Search</legend>
     <form action="index.perform" method="post">
         <input type="text" name="findName" style="width:195px;"/>
