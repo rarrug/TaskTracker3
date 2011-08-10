@@ -164,6 +164,7 @@
 
         <div id="content">
 
+            <!-- show message block -->
             <%
                 if (errMessage != null) {
             %>
