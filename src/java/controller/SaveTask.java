@@ -19,7 +19,6 @@ public class SaveTask implements IAction {
     private static final Logger logger = Logger.getLogger(SaveTask.class);
 
     public String perform(HttpServletRequest request, HttpServletResponse response) {
-        HttpSession session = request.getSession();
         BufferedWriter bw = null;
         try {
             bw = new BufferedWriter(new FileWriter(AppProperties.getProperty("exp_file")));
@@ -35,8 +34,8 @@ public class SaveTask implements IAction {
                 } else {
                     status = AppProperties.getProperty("exp_task_close_ru");
                 }
-                bw.write("\"" + task.getName() + "\",\"" + formatter.format(task.getDateBegin())
-                        + "\",\"" + formatter.format(task.getDateEnd())
+                bw.write("\"" + task.getName() + "\",\"" + formatter.format(task.getBegin())
+                        + "\",\"" + formatter.format(task.getEnd())
                         + "\",\"Ложь\",,,,\"0.000\",\"0\",\"0\",\"Обычная\",,\"" + task.getDescription() + "\",,,,"
                         + "\"Обычная\",,,\"" + status + "\",,\"Ложь\"\r\n");
             }

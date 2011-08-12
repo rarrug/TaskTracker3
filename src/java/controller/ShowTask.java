@@ -1,14 +1,10 @@
 package controller;
 
-import java.sql.SQLException;
-import model.DBModel;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.servlet.jsp.JspWriter;
 import model.AppProperties;
 import model.DAOFactory;
 import model.Task;
@@ -32,9 +28,19 @@ public class ShowTask implements IAction {
     public String perform(HttpServletRequest request, HttpServletResponse response) {
 
         HttpSession session = request.getSession();
-        //Collection<Task> taskList = (Collection<Task>) session.getAttribute("taskList");
 
         try {
+
+            /* modify request (by id)*/
+            
+            String taskid = request.getParameter(AppProperties.getProperty("modify_req_param"));
+            if (taskid != null) {
+                int id = Integer.parseInt(taskid);
+                Task task = ((List<Task>) DAOFactory.getInstance().getTaskById(id)).get(0);
+                session.setAttribute("modifyTask", task);
+            } else {
+                logger.debug("CANNOT GET <" + AppProperties.getProperty("modify_req_param") + ">");
+            }
 
             /* find by id, name or user or hierarchical view */
             String findParameter = request.getParameter(AppProperties.getProperty("find_param"));
@@ -42,23 +48,25 @@ public class ShowTask implements IAction {
                 if ("1".equals(findParameter)) {/* by id */
                     logger.info("FIND BY ID");
                     session.setAttribute("taskList", DAOFactory.getInstance().
-                            getTaskById(Integer.parseInt(request.getParameter("findName"))));
+                            getTaskById(Integer.parseInt(request.getParameter(AppProperties.getProperty("find_value")))));
                 } else if ("2".equals(findParameter)) {/* by name */
                     logger.info("FIND BY NAME");
                     session.setAttribute("taskList", DAOFactory.getInstance().
-                            getTaskByName(request.getParameter("findName")));
+                            getTaskByName(request.getParameter(AppProperties.getProperty("find_value"))));
                 } else if ("3".equals(findParameter)) {/* by user */
                     logger.info("FIND BY User");
                     session.setAttribute("taskList", DAOFactory.getInstance().
-                            getTaskByUser(request.getParameter("findName")));
+                            getTaskByUser(request.getParameter(AppProperties.getProperty("find_value"))));
                 } else if (AppProperties.getProperty("hierarchical_value").equals(findParameter)) {/* generate hierarchical list */
                     logger.info("HIERARCHICAL SEARCH");
-                    session.setAttribute("hierarchyList", DAOFactory.getInstance().getTaskList(true));
+                    session.setAttribute("hierarchyList", printHirerachicalStructure(
+                            (List<Task>) DAOFactory.getInstance().getTaskList(true)));
                     session.setAttribute("hierarchy", "1");
                 }
             } else {
                 logger.debug("UPDATE TASK LIST");
                 session.setAttribute("taskList", DAOFactory.getInstance().getTaskList(false));
+                session.setAttribute("userList", DAOFactory.getInstance().getUserList());
             }
 
         } catch (Exception ex) {
@@ -74,7 +82,8 @@ public class ShowTask implements IAction {
      * @param out Out page stream
      * @param taskList User list
      */
-    public static void printHirerachicalStructure(JspWriter out, List<Task> taskList) {
+    public static String printHirerachicalStructure(List<Task> taskList) {
+        String listAfterReplace = null;
         index = -1;
         listBuilder = new StringBuffer();
 
@@ -85,17 +94,16 @@ public class ShowTask implements IAction {
 
             while (index < taskList.size() - 1) {
                 index++;
-                printHierarchyNode(out, (Task) taskList.get(index), taskList, "");
+                printHierarchyNode((Task) taskList.get(index), taskList, "");
             }
 
             listBuilder.append("</ul>\n</li>\n</ul>\n");
-
-            String listAfterReplace = listBuilder.toString().replaceAll("</ul>\n<ul>", "");
-            out.println(listAfterReplace);
+            listAfterReplace = listBuilder.toString().replaceAll("</ul>\n<ul>", "");
             logger.debug("HIERARCHICAL LIST BUILT");
-
         } catch (IOException e) {
             logger.error("Hierarchical exception", e);
+        } finally {
+            return listAfterReplace;
         }
     }
 
@@ -106,7 +114,7 @@ public class ShowTask implements IAction {
      * @param list User list
      * @param s Some charaters
      */
-    public static void printHierarchyNode(JspWriter out, Task task, List<Task> list, String s) throws IOException {
+    public static void printHierarchyNode(Task task, List<Task> list, String s) throws IOException {
         boolean flag = true;
         if (index != 0) {
             listBuilder.append((s + "<ul>\n"));
@@ -132,7 +140,7 @@ public class ShowTask implements IAction {
             Task child = (Task) list.get(index + 1);
             if (child != null && task.getId() == child.getParentId()) {
                 index++;
-                printHierarchyNode(out, child, list, "");
+                printHierarchyNode(child, list, "");
             } else {
                 break;
             }
@@ -142,5 +150,4 @@ public class ShowTask implements IAction {
             listBuilder.append((s + "</ul>\n"));
         }
     }
-   
 }

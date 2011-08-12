@@ -27,20 +27,19 @@ public class DBModel implements IModel {
      * @throws JDOMException Parsing XML error
      * @throws IOException I/O error
      */
-    public void connect() throws ClassNotFoundException, SQLException {
-
-        String connectionUrl = AppProperties.getProperty("connection-url");
-        String driverClass = AppProperties.getProperty("driver-class");
-        String username = AppProperties.getProperty("user-name");
-        String password = AppProperties.getProperty("password");
-
-        Locale.setDefault(Locale.ENGLISH);
-        Class.forName(driverClass);
-        connection = DriverManager.getConnection(connectionUrl, username, password);
-
-    }
-
-    public void connect2() throws NamingException, SQLException {
+    /*public void connect() throws ClassNotFoundException, SQLException {
+    
+    String connectionUrl = AppProperties.getProperty("connection-url");
+    String driverClass = AppProperties.getProperty("driver-class");
+    String username = AppProperties.getProperty("user-name");
+    String password = AppProperties.getProperty("password");
+    
+    Locale.setDefault(Locale.ENGLISH);
+    Class.forName(driverClass);
+    connection = DriverManager.getConnection(connectionUrl, username, password);
+    
+    }*/
+    private void connect() throws NamingException, SQLException {
 
         /* Create environment */
         Hashtable ht = new Hashtable();
@@ -51,7 +50,7 @@ public class DBModel implements IModel {
 
         /* Create context */
         Context ctx = new InitialContext(ht);
-        DataSource ds = (DataSource) ctx.lookup("TaskTrackerDataSource");
+        DataSource ds = (DataSource) ctx.lookup("multTTrTest1");
 
         /* Create connection */
         connection = ds.getConnection();
@@ -65,7 +64,7 @@ public class DBModel implements IModel {
      * Disconnect from database
      * @throws SQLException SQL error
      */
-    public void disconnect() throws SQLException, ClassNotFoundException {
+    private void disconnect() throws SQLException {
         connection.close();
     }
 
@@ -77,8 +76,7 @@ public class DBModel implements IModel {
      * @throws SQLException SQL error
      */
     private Collection<Task> getTaskList(String column, String type, boolean hierarchy)
-            throws SQLException, ClassNotFoundException {
-
+            throws SQLException, NamingException {
         connect();
         String sql = AppProperties.getProperty("get_hierarchy_sql");
         if (!hierarchy) {
@@ -120,7 +118,7 @@ public class DBModel implements IModel {
     }
 
     public Collection<Task> getTaskList(String column, String type)
-            throws SQLException, ClassNotFoundException {
+            throws SQLException, NamingException {
         return getTaskList(column, type, false);
     }
 
@@ -130,7 +128,7 @@ public class DBModel implements IModel {
      * @throws SQLException  SQL error
      */
     public Collection<Task> getTaskList(boolean hierarchy)
-            throws SQLException, ClassNotFoundException {
+            throws SQLException, NamingException {
         if (!hierarchy) {
             return getTaskList("Task.id_task", "ASC", false);
         } else {
@@ -156,7 +154,7 @@ public class DBModel implements IModel {
         return tasks;
     }
 
-    public Collection<Task> getTaskById(int id) throws SQLException, ClassNotFoundException {
+    public Collection<Task> getTaskById(int id) throws SQLException, NamingException {
         connect();
         PreparedStatement statement = connection.prepareStatement(AppProperties.getProperty("get_task_by_id") + " Task.id_task ASC");
         statement.setInt(1, id);
@@ -167,7 +165,7 @@ public class DBModel implements IModel {
         return tasks;
     }
 
-    public Collection<Task> getTaskByName(String taskName) throws SQLException, ClassNotFoundException {
+    public Collection<Task> getTaskByName(String taskName) throws SQLException, NamingException {
         connect();
         PreparedStatement statement = connection.prepareStatement(AppProperties.getProperty("get_task_by_name") + " Task.id_task ASC");
         statement.setString(1, taskName);
@@ -178,7 +176,7 @@ public class DBModel implements IModel {
         return tasks;
     }
 
-    public Collection<Task> getTaskByUser(String userName) throws SQLException, ClassNotFoundException {
+    public Collection<Task> getTaskByUser(String userName) throws SQLException, NamingException {
         connect();
         PreparedStatement statement = connection.prepareStatement(AppProperties.getProperty("get_task_by_user") + " Task.id_task ASC");
         statement.setString(1, userName);
@@ -190,7 +188,7 @@ public class DBModel implements IModel {
     }
 
     public Collection<String> getUserList()
-            throws SQLException, ClassNotFoundException {
+            throws SQLException, NamingException {
         connect();
         Collection<String> users = new TreeSet<String>();
         PreparedStatement statement = connection.prepareStatement(AppProperties.getProperty("get_all_users_sql"));
@@ -216,7 +214,7 @@ public class DBModel implements IModel {
      */
     public void addNewTask(String name, String parent, String user,
             String begin, String end, String status, String descr)
-            throws SQLException, ClassNotFoundException {
+            throws SQLException, NamingException {
 
         connect();
         PreparedStatement statement = connection.prepareStatement(AppProperties.getProperty("add_task_sql"));
@@ -240,7 +238,7 @@ public class DBModel implements IModel {
      * @param id Task id
      * @throws SQLException SQL error
      */
-    public void deleteTask(int id) throws SQLException, ClassNotFoundException {
+    public void deleteTask(int id) throws SQLException, NamingException {
         connect();
         PreparedStatement statement = connection.prepareStatement(AppProperties.getProperty("delete_task_sql"));
         statement.setInt(1, id);
@@ -262,7 +260,7 @@ public class DBModel implements IModel {
      */
     public void modifyTask(int id, String name, String parent, String user,
             String begin, String end, String status, String descr)
-            throws SQLException, ClassNotFoundException {
+            throws SQLException, NamingException {
         connect();
         PreparedStatement statement = connection.prepareStatement(AppProperties.getProperty("modify_task_sql"));
         statement.setString(1, name);

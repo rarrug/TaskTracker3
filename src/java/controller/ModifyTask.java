@@ -1,6 +1,5 @@
 package controller;
 
-import model.DBModel;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -13,7 +12,7 @@ import org.apache.log4j.Logger;
 /**
  * Modify task by id
  */
-public class ModifyTask implements IAction {
+public class ModifyTask  implements IAction {
 
     /* Logger */
     private static final Logger logger = Logger.getLogger(ModifyTask.class);
@@ -56,4 +55,5 @@ public class ModifyTask implements IAction {
             return -1;
         }
     }
+
 }

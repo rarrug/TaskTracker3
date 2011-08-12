@@ -38,19 +38,19 @@ public class Task {
         this.description = description;
     }
 
-    public Date getDateBegin() {
+    public Date getBegin() {
         return begin;
     }
 
-    public void setDateBegin(Date dateBegin) {
+    public void setBegin(Date dateBegin) {
         this.begin = dateBegin;
     }
 
-    public Date getDateEnd() {
+    public Date getEnd() {
         return end;
     }
 
-    public void setDateEnd(Date dateEnd) {
+    public void setEnd(Date dateEnd) {
         this.end = dateEnd;
     }
 
@@ -104,7 +104,7 @@ public class Task {
 
     public String toString() {
         return "" + getId() + " - " + getName() + " - " + getParentId() + " - "
-                + getDateBegin() + " - " + getDateEnd()
+                + getBegin() + " - " + getEnd()
                 + " - " + getStatus() + " - " + getEmp() + " - " + getDept() + " - " + getDescription();
     }
 
