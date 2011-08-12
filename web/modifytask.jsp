@@ -4,129 +4,122 @@
 
     <h3>Modify task</h3>
 
-    <!-- get task info by request -->
-    <%
-        String id = request.getParameter("taskid");
+    <!-- get task from session -->
+    <c:set var="modifyTask" value="${sessionScope.modifyTask}" />
 
-        String name = "";
-        String begin = "";
-        String end = "";
-        String status = "";
-        String emp = "";
-        int parentId = 0;
-        String descr = "";
-
-        for (Task task : taskList) {
-
-            if ((task.getId() + "").equals(id)) {
-                name = task.getName();
-                begin = task.getDateBegin().toString();
-                end = task.getDateEnd().toString();
-                status = task.getStatus();
-                emp = task.getEmp();
-                parentId = task.getParentId();
-                if (task.getDescription() != null) {
-                    descr = task.getDescription();
-                }
-
-                break;
-                //out.println(name + " - " + begin + " - " + end + " - " + status + " - " + emp + " - " + parentId);
-            }
-        }
-    %>
-
-    <!-- task modify form -->
+    <!-- build and fill form whith task parameters -->
     <div>
         <form action="modifytask.perform" method="post">
 
             <div class="modify-block-label">ID:</div>
-            <input type="text" name="modifyId" value="<%=request.getParameter("taskid")%>" 
-                   readonly="true"/>
+            <input type="text" name="modifyId" value="${modifyTask.id}" readonly/>
 
             <br/>
             <div class="modify-block-label">Name:</div>
-            <input type="text" name="modifyName" value="<%=name%>"/>
+            <input type="text" name="modifyName" value="${modifyTask.name}"/>
 
             <br/>
             <div class="modify-block-label">Parent:</div>
             <select name="modifyParent">
-                <option value="null" <% if (parentId == 0) {
-                        out.println("selected");
-                    }%>>no
-                </option>
-                <%
-                    for (Task parentTask : taskList) {
-                        if (parentTask.getId() != Integer.parseInt(id)) {
-                %>
-                <option value="<%=parentTask.getName()%>" 
-                        <% if (parentTask.getId() == parentId) {
-                                out.println("selected");
-                            }%>><%=(parentTask.getId() + " - " + parentTask.getName())%>
-                </option>
-                <%      }
-                    }
-                %>
+                <c:choose>
+                    <c:when test="${modifyTask.id eq 0}">
+                        <option value="null" selected>no</option>
+                    </c:when>
+                    <c:otherwise>
+                        <option value="null">no</option>
+                    </c:otherwise>
+                </c:choose>
+
+                <c:forEach items="${taskList}" var="parentTask">
+                    <c:if test="${parentTask.id ne modifyTask.id}">
+                        <c:choose>
+                            <c:when test="${parentTask.id eq modifyTask.parentId}">
+                                <option value="${parentTask.name}" selected>
+                                    ${parentTask.id}
+                                    <c:out value=" - " />
+                                    ${parentTask.name}
+                                </option>
+                            </c:when>
+                            <c:otherwise>
+                                <option value="${parentTask.name}">
+                                    ${parentTask.id}
+                                    <c:out value=" - " />
+                                    ${parentTask.name}
+                                </option>
+                            </c:otherwise>
+                        </c:choose>
+                    </c:if>
+                </c:forEach>
             </select>
 
             <br/>
             <div class="modify-block-label">User:</div>
             <select name="modifyUser">
-                <%
-                    /* generate user list from task list */
-                    for (String user : DAOFactory.getInstance().getUserList()) {
-                %>
-                <option value="<%=user%>" 
-                        <% if (emp.equals(user)) {
-                                out.println("selected");
-                            }
-                        %>><%=user%>
-                </option>
-                <%
-                    }
-                %>
+                <c:forEach items="${userList}" var="user">
+                    <c:choose>
+                        <c:when test="${user eq modifyTask.emp}">
+                            <option value="${user}" selected>${user}</option>
+                        </c:when>
+                        <c:otherwise>
+                            <option value="${user}">${user}</option>
+                        </c:otherwise>
+                    </c:choose>
+                </c:forEach>
             </select>
 
             <br/>
             <div class="modify-block-label">Begin:</div>
-            <input type="text" name="modifyBegin" value="<%=begin%>" id="calendarBeginM" readonly="true"/>
+            <input type="text" name="modifyBegin" value="${modifyTask.begin}" id="calendarBeginM" readonly="true"/>
 
             <div id="cCallbackBeginM" class="select-free"></div>
 
             <br/>
             <div class="modify-block-label">End:</div>
-            <input type="text" name="modifyEnd" value="<%=end%>" id="calendarEndM" readonly="true"/>
+            <input type="text" name="modifyEnd" value="${modifyTask.end}" id="calendarEndM" readonly="true"/>
 
             <div id="cCallbackEndM" class="select-free"></div>
 
             <br/>
             <div class="modify-block-label">Status:</div>
             <select name="modifyStatus">
-                <option value="open" <% if ("open".equals(status)) {
-                        out.println("selected");
-                    }%>>open</option>
-                <option value="process" <% if ("process".equals(status)) {
-                        out.println("selected");
-                    }%>>process</option>
-                <option value="close" <% if ("close".equals(status)) {
-                        out.println("selected");
-                    }%>>close</option>
+                <c:choose>
+                    <c:when test='${"open" eq modifyTask.status}'>
+                        <option value="open" selected>open</option>
+                    </c:when>
+                    <c:otherwise>
+                        <option value="open">open</option>
+                    </c:otherwise>
+                </c:choose>
+                <c:choose>
+                    <c:when test='${"process" eq modifyTask.status}'>
+                        <option value="process" selected>process</option>
+                    </c:when>
+                    <c:otherwise>
+                        <option value="process">process</option>
+                    </c:otherwise>
+                </c:choose>
+                <c:choose>
+                    <c:when test='${"close" eq modifyTask.status}'>
+                        <option value="close" selected>close</option>
+                    </c:when>
+                    <c:otherwise>
+                        <option value="close">close</option>
+                    </c:otherwise>
+                </c:choose>
             </select>
 
             <br style="float:none;"/>
             <div class="modify-block-label">Description:</div>
             <br style="float:none;"/>
-            <textarea name="modifyDescription"><%=descr%></textarea>
+            <textarea name="modifyDescription">${modifytask.description}</textarea>
 
             <br/>
             <input type="submit" name="taskModify" value="Modify" id="modifyButton"/>
 
         </form>
     </div>
-
 </div>
 
 <div style='display:none;'>
     <img src='im/x.png' alt='' style="border:1px solid white;"/>
 </div>
-
-

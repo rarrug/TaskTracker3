@@ -4,6 +4,7 @@
 
     <h3>Add task</h3>
 
+    <!-- build and fill form whith task parameters -->
     <div id="add-block" title="Add task">
         <form action="addtask.perform" method="post">
             <div class="add-block-label">Name:</div>
@@ -13,35 +14,28 @@
             <div class="add-block-label">Parent:</div>
             <select name="taskParent">
                 <option value="null">no</option>
-                <%
-                    for (Task parentTask : taskList) {
-                %>
-                <option value="<%=parentTask.getName()%>"><%=parentTask.getName()%></option>
-                <%  }%>
+                <c:forEach items="${taskList}" var="parentTask">
+                    <option value="${parentTask.name}">${parentTask.name}</option>
+                </c:forEach>
             </select>
 
             <br style="float:none;"/>
             <div class="add-block-label">User:</div>
             <select name="taskUser">
-                <%
-                    /* generate user list from task list */
-                    for (String user : DAOFactory.getInstance().getUserList()) {
-                %>
-                <option value="<%=user%>"><%=user%></option>
-                <%
-                    }
-                %>
+                <c:forEach items="${userList}" var="user">
+                    <option value="${user}">${user}</option>
+                </c:forEach>
             </select>
 
             <br style="float:none;"/>
             <div class="add-block-label">Begin:</div>
-            <input type="text" name="taskBegin" value="2011-11-17" id="calendarBeginA" readonly="true"/>
+            <input type="text" name="taskBegin" value="2011-11-17" id="calendarBeginA" readonly />
 
             <div id="cCallbackBeginA" class="select-free"></div>
 
             <br style="float:none;"/>
             <div class="add-block-label">End:</div>
-            <input type="text" name="taskEnd" value="2011-11-17" id="calendarEndA" readonly="true"/>
+            <input type="text" name="taskEnd" value="2011-11-17" id="calendarEndA" readonly />
 
             <div id="cCallbackEndA" class="select-free"></div>
 

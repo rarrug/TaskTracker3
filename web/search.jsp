@@ -1,4 +1,4 @@
-<%-- search block --%>
+<!-- search block -->
 
 <fieldset class="block block-hide" id="find-block" title="Search">
     <legend>Search</legend>

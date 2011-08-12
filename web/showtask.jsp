@@ -1,4 +1,3 @@
-
 <%@page import="java.util.Collection"%>
 <%@page import="java.util.ArrayList"%>
 <%@page import="org.apache.log4j.Logger"%>
@@ -8,6 +7,9 @@
 <%@page import="model.Task"%>
 <%@page import="model.DAOFactory"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%--@ taglib uri="/WEB-INF/lib/mylib.tld" prefix="myTag" --%>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
     "http://www.w3.org/TR/html4/loose.dtd">
@@ -56,98 +58,25 @@
         <!-- Calendar JS file -->
         <script type="text/javascript" src="js/jquery.calendarlite.js"></script>
 
-        <script type="text/javascript">
-            
-            var simpleTreeCollection;
-
-            $(document).ready(function(){
-            
-                simpleTreeCollection = $('.simpleTree').simpleTree({
-                    autoclose: true,
-                    afterClick:function(node){
-                        //alert("text-"+$('span:first',node).text());
-                    },
-                    afterDblClick:function(node){
-                        //alert("text-"+$('span:first',node).text());
-                    },
-                    afterMove:function(destination, source, pos){
-                        //alert("destination-"+destination.attr('id')+" source-"+source.attr('id')+" pos-"+pos);
-                    },
-                    afterAjax:function()
-                    {
-                        //alert('Loaded');
-                    },
-                    animate:true
-                    //,docToFolderConvert:true
-                });
-            
-                $(function() {		
-                    $("#tablesorter").tablesorter({sortList:[[0,0]], widgets: ['zebra']});
-                });
-                
-                /* search */
-                $('#find-label').click(function() {
-                    $('#find-block').slideToggle('normal');
-                });
-                
-                $('#saveArea, #hierar-block, #tablesorter').hide();
-                $('#saveArea, #hierar-block, #tablesorter').fadeIn('normal');
-                
-                /* build calendar to blocks */
-                openWindow('#cCallbackBeginA', '#calendarBeginA');
-                openWindow('#cCallbackEndA', '#calendarEndA');
-                openWindow('#cCallbackBeginM', '#calendarBeginM');
-                openWindow('#cCallbackEndM', '#calendarEndM');
-            });
-            
-            /* run calendar function */
-            function openWindow(block, inpt) {
-                $(block).calendarLite({
-                    showYear: true,
-                    prevArrow: '<',
-                    nextArrow: '>',
-                    months: ['January', 'February', 'March', 'April', 'May', 'June',
-                        'July', 'August', 'September', 'October', 'November', 'December'],
-                    days: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
-                    dateFormat: '{%yyyy}-{%m}-{%d}',
-                    onSelect: function(date) {
-                        $(inpt).attr('value', date);
-                        $(block).slideUp('normal');
-                        return false;
-                    }
-                });
-                $(block).hide();
-                $(inpt).click(function() {
-                    if ($(block).is(':visible'))
-                        $(block).slideUp('normal')();
-                    else {
-                        $(block).slideDown('normal');
-                        $(block).css('margin-top', '-40px');
-                    }
-                });
-            }
-            
-        </script>
+        <script type='text/javascript' src='js/doc.load.js'></script>
 
     </head>
     <body>
 
-        <%-- get parameters from request and session--%>
+        <!-- get parameters from request and session -->
+        <c:set var="taskid" scope="page" value="${param.taskid}" />
+        <c:set var="hierarchy" scope="page" value="${sessionScope.hierarchy}" />
+        <c:set var="message" scope="page" value="${sessionScope.message}" />
+        <c:set var="taskList" scope="session" value="${sessionScope.taskList}" />
+        <c:set var="userList" scope="session" value="${sessionScope.userList}" />
 
         <%
             /* Logger */
             final Logger logger = Logger.getLogger(this.getClass());
-
             try {
-                String userId = request.getParameter("taskid");
-                String hierarchy = (String) session.getAttribute("hierarchy");
-                String errMessage = (String) session.getAttribute("message");
-                Collection<Task> taskList = (Collection<Task>) session.getAttribute("taskList");
-
         %>
 
         <!-- left menu -->
-
         <div class='box'>
             <div class='boxtop'><div></div></div>
             <div class='boxcontent'>
@@ -163,104 +92,125 @@
         <!-- main content -->
 
         <div id="content">
-
-            <!-- show message block -->
-            <%
-                if (errMessage != null) {
-            %>
-            <script type="text/javascript">
-                $(document).ready(function() {
-                    var element = $('#content #message');
-                    //alert('class: ' + $('#content #messageType').text());
-                    element.hide().fadeIn(1000).delay(3000).fadeOut(1000);
-                    //alert($('#content #message').text());
-                });
-            </script>
-            <div id="message" class="<%=(String) session.getAttribute("messageType")%>"><%=errMessage%></div>
-            <%
+            
+            <!-- message block. show when some action happened -->
+            <c:if test="${message ne null}" >
+                <script type="text/javascript">
+                    $(document).ready(function() {
+                        $('#content #message').hide().fadeIn(1000).delay(3000).fadeOut(1000);
+                    });
+                </script>
+                <div id="message" class="${sessionScope.messageType}">${message}</div>
+                <%
                     session.setAttribute("message", null);
                     session.setAttribute("messageType", null);
-                }
-            %>
+                %>
+            </c:if>
 
-
-            <%-- show window if task must be modify (userId exists in url) --%>
-
-            <%
-                if (userId != null) {
-                    logger.info("Show modal modify window");
-            %>
-            <%@include file="modifytask.jsp" %>
-            <script type="text/javascript">
-                $(document).ready(function() {
-                    $('#basic-modal-content-modify').modal()  
-                });
-            </script>
-            <%}%>
-
-            <%-- include pages (search, add task, modify task, confirm dialog)--%>
-
+            <!-- include pages (search, add task, modify task, confirm dialog)-->
             <%@include file="search.jsp" %>
             <%@include file="addtask.jsp" %>
             <%@include file="confirm.jsp" %>
 
-            <%-- output to main content table or hierarchical list --%>
+            <!-- show window if task must be modify (taskId exists in url) -->
+            <c:if test="${taskid ne null}">
+                <%@include file="modifytask.jsp" %>
+                <script type="text/javascript">
+                    $(document).ready(function() {
+                        $('#basic-modal-content-modify').modal()  
+                    });
+                </script>
+                <%logger.info("Show modal modify window");%>
+            </c:if>
 
+            <!-- hierarchical block. activate when press hirerachical link -->
+            <c:choose>
+                <c:when test="${hierarchy ne null}">
+                    <fieldset id="hierar-block" class="block" title="Hierarchical structure">
+                        <legend>Hierarchical structure</legend>
+                        <%
+                            logger.info("Show hierarchical structure");
+                            out.println(session.getAttribute("hierarchyList"));
+                            session.setAttribute("hierarchy", null);
+                        %>
+                    </fieldset>
+                </c:when>
+                <c:otherwise>
+                    <!-- if not activate hierarchical output, show all tasks in table -->
+                    <table id="tablesorter" class="tablesorter" border="0" cellpadding="0" cellspacing="1">
+                        <caption><b>Task table</b></caption>
+                        <thead>
+                            <tr>
+                                <th>&nbsp;</th>
+                                <th>ID</th>
+                                <th>NAME</th>
+                                <th>PARENT</th>
+                                <th>BEGIN</th>
+                                <th>END</th>
+                                <th>STATUS</th>
+                                <th>USER</th>
+                                <th>DEPT</th>
+                                <th>DESCRIPTION</th>
+                                <th>&nbsp;</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                            <!-- output row table with parameters of each task -->
+                            <c:forEach items="${taskList}" var="currTask">
+                                <tr>
+                                    <td width="100px">
+                                        <div id='basic-modal'>
+                                            <a href="index.jsp?taskid=${currTask.id}" class="basic-modify" title="Modify">
+                                                <img src="im/modify.png" alt="Modify"/>
+                                            </a>
+                                        </div>
+                                    </td>
+                                    <td width="100px">${currTask.id}</td>
+                                    <td width="100px">${currTask.name}</td>
+
+                                    <c:choose>
+                                        <c:when test="${currTask.parentId eq 0}">
+                                            <td width="100px">no</td>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <td width="100px">${currTask.parentId}</td>
+                                        </c:otherwise>
+                                    </c:choose>
+
+                                    <td width="110px">${currTask.begin}</td>
+                                    <td width="110px">${currTask.end}</td>
+                                    <td width="110px">${currTask.status}</td>
+                                    <td width="100px">${currTask.emp}</td>
+                                    <td width="100px">${currTask.dept}</td>
+
+                                    <c:choose>
+                                        <c:when test="${currTask.description eq null}">
+                                            <td width="120px"> - </td>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <td width="120px">${currTask.description}</td>
+                                        </c:otherwise>
+                                    </c:choose>
+
+                                    <td width="50px" align="center" id='confirm-dialog'>
+                                        <a href="${currTask.id}" class='confirm' title="Delete">
+                                            <img src="im/delete.png" alt="Delete"/>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                        </tbody>
+                    </table>
+                </c:otherwise>
+            </c:choose>
+
+            <%-- catch exception and write to log --%>
             <%
-                if (hierarchy != null) {
-                    logger.info("Show hierarchical structure");
+                } catch (Exception e) {
+                    logger.error("JSP page exception", e);
+                }
             %>
-
-            <!-- hierarchical block -->
-
-            <%
-                /* output hierarchical structure of tasks */
-                out.println("<fieldset id=\"hierar-block\" class=\"block\" title=\"Hierarchical structure\">");
-                out.println("<legend>Hierarchical structure</legend>");
-                ArrayList<Task> arrList = new ArrayList<Task>((Collection<Task>) session.getAttribute("hierarchyList"));
-                ShowTask.printHirerachicalStructure(out, arrList);
-                out.println("</fieldset>");
-                session.setAttribute("hierarchy", null);
-            } else {
-                logger.info("Show tasks");
-            %>
-
-            <%-- task table header --%>
-
-            <table id="tablesorter" class="tablesorter" border="0" cellpadding="0" cellspacing="1">
-                <caption><b>Task table</b></caption>
-                <thead>
-                    <tr>
-                        <th>&nbsp;</th>
-                        <th>ID</th>
-                        <th>NAME</th>
-                        <th>PARENT</th>
-                        <th>BEGIN</th>
-                        <th>END</th>
-                        <th>STATUS</th>
-                        <th>USER</th>
-                        <th>DEPT</th>
-                        <th>DESCRIPTION</th>
-                        <th>&nbsp;</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <%
-                        /* output task list */
-                        for (Task task : taskList) {
-                            session.setAttribute("task", task);
-                    %>
-                    <jsp:include page="tasktable.jsp" />
-                    <%
-                        }
-                    %>
-                </tbody></table>
-                <%
-                        }
-                    } catch (Exception e) {
-                        logger.error("JSP page exception", e);
-                    }
-                %>
         </div>
 
     </body>
