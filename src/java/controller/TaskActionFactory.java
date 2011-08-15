@@ -34,9 +34,9 @@ public class TaskActionFactory {
      */
     public IAction create(String actionName) {
         Class klass = (Class) listActions.get(actionName);
-        if (klass == null) {
+        /*if (klass == null) {
             throw new RuntimeException(getClass() + " was unable to find an " + "action named '" + actionName + "'.");
-        }
+        }*/
         IAction actionInstance = null;
         try {
             actionInstance = (IAction) klass.newInstance();

@@ -1,6 +1,9 @@
 package controller;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -9,6 +12,7 @@ import model.AppProperties;
 import model.DAOFactory;
 import model.Task;
 import org.apache.log4j.Logger;
+import weblogic.jms.utils.Simple;
 
 /**
  * Generate task list by request
@@ -30,7 +34,7 @@ public class ShowTask implements IAction {
         HttpSession session = request.getSession();
 
         try {
-
+    
             /* modify request (by id)*/
             
             String taskid = request.getParameter(AppProperties.getProperty("modify_req_param"));
@@ -38,22 +42,21 @@ public class ShowTask implements IAction {
                 int id = Integer.parseInt(taskid);
                 Task task = ((List<Task>) DAOFactory.getInstance().getTaskById(id)).get(0);
                 session.setAttribute("modifyTask", task);
-            } else {
-                logger.debug("CANNOT GET <" + AppProperties.getProperty("modify_req_param") + ">");
-            }
-
+                System.out.println("modifyTask.description: " + task.getDescription());
+            } 
+            
             /* find by id, name or user or hierarchical view */
             String findParameter = request.getParameter(AppProperties.getProperty("find_param"));
             if (findParameter != null) {
-                if ("1".equals(findParameter)) {/* by id */
+                if ("by_id".equals(findParameter)) {/* by id */
                     logger.info("FIND BY ID");
                     session.setAttribute("taskList", DAOFactory.getInstance().
                             getTaskById(Integer.parseInt(request.getParameter(AppProperties.getProperty("find_value")))));
-                } else if ("2".equals(findParameter)) {/* by name */
+                } else if ("by_name".equals(findParameter)) {/* by name */
                     logger.info("FIND BY NAME");
                     session.setAttribute("taskList", DAOFactory.getInstance().
                             getTaskByName(request.getParameter(AppProperties.getProperty("find_value"))));
-                } else if ("3".equals(findParameter)) {/* by user */
+                } else if ("by_user".equals(findParameter)) {/* by user */
                     logger.info("FIND BY User");
                     session.setAttribute("taskList", DAOFactory.getInstance().
                             getTaskByUser(request.getParameter(AppProperties.getProperty("find_value"))));
@@ -67,6 +70,7 @@ public class ShowTask implements IAction {
                 logger.debug("UPDATE TASK LIST");
                 session.setAttribute("taskList", DAOFactory.getInstance().getTaskList(false));
                 session.setAttribute("userList", DAOFactory.getInstance().getUserList());
+                session.setAttribute("today", new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
             }
 
         } catch (Exception ex) {

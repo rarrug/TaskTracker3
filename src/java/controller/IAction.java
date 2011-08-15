@@ -9,6 +9,8 @@ import javax.servlet.http.HttpServletResponse;
  */
 public interface IAction {
     
+    int SUCCESS_MESS = 1;
+    int FAIL_MESS = 2;
     /**
      * Process some request and do some actions
      * @param request Request from page
