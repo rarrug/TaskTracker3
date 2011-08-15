@@ -14,9 +14,9 @@
             <br style="float:none;"/>
             <div class="add-block-label">Parent:</div>
             <select name="taskParent">
-                <option value="null">no</option>
+                <option value="0">no</option>
                 <c:forEach items="${taskList}" var="parentTask">
-                    <option value="${parentTask.name}">${parentTask.name}</option>
+                    <option value="${parentTask.id}">${parentTask.name}</option>
                 </c:forEach>
             </select>
 
@@ -59,6 +59,7 @@
         </form>
     </div> 
 </div>
+
 <div style='display:none;'>
     <img src='im/x.png' alt='' style="border:1px solid white;"/>
 </div>

@@ -12,6 +12,7 @@ public class AppProperties {
     private static Properties getInstance() {
         if (properties == null) {
             try {
+                //FileInputStream inFile = new FileInputStream("D:/parkhomchuk/PropSource.properties");
                 FileInputStream inFile = new FileInputStream("PropSource.properties");
                 properties = new Properties();
                 properties.load(inFile);

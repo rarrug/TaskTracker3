@@ -59,6 +59,7 @@ public class TaskServlet extends HttpServlet {
         while ((in != null) && ((length = in.read(bbuf)) != -1)) {
             op.write(bbuf, 0, length);
         }
+
         in.close();
         op.flush();
         op.close();

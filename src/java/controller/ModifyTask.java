@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import model.AppProperties;
 import model.DAOFactory;
+import model.Task;
 import model.exc.ConnectionException;
 import org.apache.log4j.Logger;
 
@@ -23,16 +24,24 @@ public class ModifyTask implements IAction {
         logger.info("MODIFY TASK");
         try {
             int id = Integer.parseInt(request.getParameter(AppProperties.getProperty("modify_id_param")));
+            String taskName = request.getParameter(AppProperties.getProperty("modify_name_param"));
+            int taskParent = Integer.parseInt(request.getParameter(AppProperties.getProperty("modify_parent_param")));
+            Date taskBegin = new SimpleDateFormat("yyyy-MM-dd").parse(
+                    request.getParameter(AppProperties.getProperty("modify_begin_param")));
+            Date taskEnd = new SimpleDateFormat("yyyy-MM-dd").parse(
+                    request.getParameter(AppProperties.getProperty("modify_end_param")));
+            String taskStatus = request.getParameter(AppProperties.getProperty("modify_status_param"));
+            String taskUser = request.getParameter(AppProperties.getProperty("modify_user_param"));
+            String taskDescr = request.getParameter(AppProperties.getProperty("modify_descr_param"));
+
+            Task task = new Task(id, taskName, taskParent, taskBegin, taskEnd, taskStatus, taskUser, "", taskDescr);
+            
             verifyData(request.getParameter(AppProperties.getProperty("modify_name_param")),
                     request.getParameter(AppProperties.getProperty("modify_begin_param")),
                     request.getParameter(AppProperties.getProperty("modify_end_param")));
-            DAOFactory.getInstance().modifyTask(id, request.getParameter(AppProperties.getProperty("modify_name_param")),
-                    request.getParameter(AppProperties.getProperty("modify_parent_param")),
-                    request.getParameter(AppProperties.getProperty("modify_user_param")),
-                    request.getParameter(AppProperties.getProperty("modify_begin_param")),
-                    request.getParameter(AppProperties.getProperty("modify_end_param")),
-                    request.getParameter(AppProperties.getProperty("modify_status_param")),
-                    request.getParameter(AppProperties.getProperty("modify_descr_param")));
+           
+            DAOFactory.getInstance().modifyTask(task);
+            
             setModifyMessage(request, SUCCESS_MESS, "Task modify sucessfully!", null);
         } catch (NumberFormatException ex) {
             setModifyMessage(request, FAIL_MESS, "Incorrect ID: "

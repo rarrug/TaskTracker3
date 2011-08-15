@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import model.AppProperties;
 import model.DAOFactory;
+import model.Task;
 import model.exc.ConnectionException;
 import org.apache.log4j.Logger;
 
@@ -22,21 +23,25 @@ public class AddTask implements IAction {
     public String perform(HttpServletRequest request, HttpServletResponse response) {
         logger.info("ADD NEW TASK");
         try {
-            verifyData(request.getParameter(AppProperties.getProperty("add_name_param")),
-                    request.getParameter(AppProperties.getProperty("add_begin_param")),
+            String taskName = request.getParameter(AppProperties.getProperty("add_name_param"));
+            int taskParent = Integer.parseInt(request.getParameter(AppProperties.getProperty("add_parent_param")));
+            Date taskBegin = new SimpleDateFormat("yyyy-MM-dd").parse(
+                    request.getParameter(AppProperties.getProperty("add_begin_param")));
+            Date taskEnd = new SimpleDateFormat("yyyy-MM-dd").parse(
                     request.getParameter(AppProperties.getProperty("add_end_param")));
+            String taskStatus = request.getParameter(AppProperties.getProperty("add_status_param"));
+            String taskUser = request.getParameter(AppProperties.getProperty("add_user_param"));
+            String taskDescr = request.getParameter(AppProperties.getProperty("add_descr_param"));
 
-            DAOFactory.getInstance().addNewTask(request.getParameter(AppProperties.getProperty("add_name_param")),
-                    request.getParameter(AppProperties.getProperty("add_parent_param")),
-                    request.getParameter(AppProperties.getProperty("add_user_param")),
-                    request.getParameter(AppProperties.getProperty("add_begin_param")),
-                    request.getParameter(AppProperties.getProperty("add_end_param")),
-                    request.getParameter(AppProperties.getProperty("add_status_param")),
-                    request.getParameter(AppProperties.getProperty("add_descr_param")));
-            setAddMessage(request, SUCCESS_MESS, "Task modaddedify sucessfully!", null);
+            Task task = new Task(0, taskName, taskParent, taskBegin, taskEnd, taskStatus, taskUser, "", taskDescr);
+            
+            verifyData(task);
+            DAOFactory.getInstance().addNewTask(task);
+            
+            setAddMessage(request, SUCCESS_MESS, "Task addedify sucessfully!", null);
         } catch (NumberFormatException ex) {
-            setAddMessage(request, FAIL_MESS, "Incorrect ID: "
-                    + request.getParameter(AppProperties.getProperty("modify_id_param")), ex);
+            setAddMessage(request, FAIL_MESS, "Incorrect data: "
+                    + ex.getMessage(), ex);
         } catch (ParseException ex) {
             setAddMessage(request, FAIL_MESS, ex.getMessage(), ex);
         } catch (ConnectionException ex) {
@@ -58,13 +63,10 @@ public class AddTask implements IAction {
         }
     }
 
-    private void verifyData(String name, String begin, String end) throws ParseException {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-        Date beginDate = formatter.parse(begin);
-        Date endDate = formatter.parse(end);
-        if (name == null || "".equals(name)) {
+    private void verifyData(Task task) throws ParseException {
+        if (task.getName() == null || "".equals(task.getName())) {
             throw new ParseException("Task name cannot be empty", 0);
-        } else if (endDate.compareTo(beginDate) == -1) {
+        } else if (task.getEnd().compareTo(task.getBegin()) == -1) {
             throw new ParseException("Wrong dates", 0);
         }
     }

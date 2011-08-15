@@ -19,12 +19,10 @@ public interface IModel {
 
     Collection<String> getUserList() throws SQLException, ConnectionException;
 
-    void addNewTask(String name, String parent, String user, String begin,
-            String end, String status, String descr) throws SQLException, ConnectionException;
+    void addNewTask(Task newTask) throws SQLException, ConnectionException;
 
     void deleteTask(int id) throws SQLException, ConnectionException;
 
-    void modifyTask(int id, String name, String parent, String user, String begin,
-            String end, String status, String descr) throws SQLException, ConnectionException;
+    void modifyTask(Task task) throws SQLException, ConnectionException;
 
 }

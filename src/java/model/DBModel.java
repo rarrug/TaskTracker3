@@ -2,6 +2,7 @@ package model;
 
 import java.io.IOException;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
 import javax.naming.Context;
@@ -219,22 +220,23 @@ public class DBModel implements IModel {
      * @param status Task status
      * @throws SQLException SQl error
      */
-    public void addNewTask(String name, String parent, String user,
-            String begin, String end, String status, String descr)
+    //String name, String parent, String user, String begin, String end, String status, String descr
+    public void addNewTask(Task newTask)
             throws SQLException, ConnectionException {
 
         connect();
         PreparedStatement statement = connection.prepareStatement(AppProperties.getProperty("add_task_sql"));
-        statement.setString(1, name);
-        if ("no".equals(parent)) {
-            parent = "null";
+        statement.setString(1, newTask.getName());
+        if (newTask.getParentId() == 0) {
+            statement.setNull(2, java.sql.Types.INTEGER);
+        } else {
+            statement.setInt(2, newTask.getParentId());
         }
-        statement.setString(2, parent);
-        statement.setString(3, user);
-        statement.setString(4, begin);
-        statement.setString(5, end);
-        statement.setString(6, status);
-        statement.setString(7, descr);
+        statement.setString(3, newTask.getEmp());
+        statement.setString(4, new SimpleDateFormat("yyyy-MM-dd").format(newTask.getBegin()));
+        statement.setString(5, new SimpleDateFormat("yyyy-MM-dd").format(newTask.getEnd()));
+        statement.setString(6, newTask.getStatus());
+        statement.setString(7, newTask.getDescription());
         statement.executeUpdate();
         statement.close();
         disconnect();
@@ -265,22 +267,22 @@ public class DBModel implements IModel {
      * @param status Task status
      * @throws SQLException SQL error
      */
-    public void modifyTask(int id, String name, String parent, String user,
-            String begin, String end, String status, String descr)
+    public void modifyTask(Task task)
             throws SQLException, ConnectionException {
         connect();
         PreparedStatement statement = connection.prepareStatement(AppProperties.getProperty("modify_task_sql"));
-        statement.setString(1, name);
-        if ("no".equals(parent)) {
-            parent = "null";
+        statement.setString(1, task.getName());
+        if (task.getParentId() == 0) {
+            statement.setNull(2, java.sql.Types.INTEGER);
+        } else {
+            statement.setInt(2, task.getParentId());
         }
-        statement.setString(2, parent);
-        statement.setString(3, user);
-        statement.setString(4, begin);
-        statement.setString(5, end);
-        statement.setString(6, status);
-        statement.setString(7, descr);
-        statement.setInt(8, id);
+        statement.setString(3, task.getEmp());
+        statement.setString(4, new SimpleDateFormat("yyyy-MM-dd").format(task.getBegin()));
+        statement.setString(5, new SimpleDateFormat("yyyy-MM-dd").format(task.getEnd()));
+        statement.setString(6, task.getStatus());
+        statement.setString(7, task.getDescription());
+        statement.setInt(8, task.getId());
         statement.executeUpdate();
         statement.close();
         disconnect();

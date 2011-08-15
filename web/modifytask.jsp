@@ -24,10 +24,10 @@
             <select name="modifyParent">
                 <c:choose>
                     <c:when test="${modifyTask.id eq 0}">
-                        <option value="null" selected>no</option>
+                        <option value="0" selected>no</option>
                     </c:when>
                     <c:otherwise>
-                        <option value="null">no</option>
+                        <option value="0">no</option>
                     </c:otherwise>
                 </c:choose>
 
@@ -35,14 +35,14 @@
                     <c:if test="${parentTask.id ne modifyTask.id}">
                         <c:choose>
                             <c:when test="${parentTask.id eq modifyTask.parentId}">
-                                <option value="${parentTask.name}" selected>
+                                <option value="${parentTask.id}" selected>
                                     ${parentTask.id}
                                     <c:out value=" - " />
                                     ${parentTask.name}
                                 </option>
                             </c:when>
                             <c:otherwise>
-                                <option value="${parentTask.name}">
+                                <option value="${parentTask.id}">
                                     ${parentTask.id}
                                     <c:out value=" - " />
                                     ${parentTask.name}
