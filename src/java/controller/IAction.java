@@ -7,7 +7,8 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Actions interface
  */
-public interface IAction {
+public interface IAction
+{
     
     int SUCCESS_MESS = 1;
     int FAIL_MESS = 2;
