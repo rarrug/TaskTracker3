@@ -4,12 +4,11 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+import model.exc.ConnectionException;
 import org.jdom.*;
 
 /**
@@ -39,24 +38,29 @@ public class DBModel implements IModel {
     connection = DriverManager.getConnection(connectionUrl, username, password);
     
     }*/
-    private void connect() throws NamingException, SQLException {
+    private void connect() throws ConnectionException {
+        try {
+            /* Create environment */
+            Hashtable ht = new Hashtable();
+            ht.put(Context.INITIAL_CONTEXT_FACTORY,
+                    "weblogic.jndi.WLInitialContextFactory");
+            ht.put(Context.PROVIDER_URL,
+                    "t3://localhost:7001");
 
-        /* Create environment */
-        Hashtable ht = new Hashtable();
-        ht.put(Context.INITIAL_CONTEXT_FACTORY,
-                "weblogic.jndi.WLInitialContextFactory");
-        ht.put(Context.PROVIDER_URL,
-                "t3://localhost:7001");
+            /* Create context */
+            Context ctx = new InitialContext(ht);
+            DataSource ds = (DataSource) ctx.lookup("multTTrTest1");
 
-        /* Create context */
-        Context ctx = new InitialContext(ht);
-        DataSource ds = (DataSource) ctx.lookup("multTTrTest1");
-
-        /* Create connection */
-        connection = ds.getConnection();
-        if (connection == null) {
-            throw new SQLException(
-                    "Connection has not created");
+            /* Create connection */
+            connection = ds.getConnection();
+            if (connection == null) {
+                throw new ConnectionException(
+                        "Connection has not created");
+            }
+        } catch (SQLException ex) {
+            throw new ConnectionException("Disconnect error");
+        } catch (NamingException ex) {
+            throw new ConnectionException("Disconnect error");
         }
     }
 
@@ -64,8 +68,12 @@ public class DBModel implements IModel {
      * Disconnect from database
      * @throws SQLException SQL error
      */
-    private void disconnect() throws SQLException {
-        connection.close();
+    private void disconnect() throws ConnectionException {
+        try {
+            connection.close();
+        } catch (SQLException ex) {
+            throw new ConnectionException("Disconnect error");
+        }
     }
 
     /**
@@ -76,7 +84,7 @@ public class DBModel implements IModel {
      * @throws SQLException SQL error
      */
     private Collection<Task> getTaskList(String column, String type, boolean hierarchy)
-            throws SQLException, NamingException {
+            throws SQLException, ConnectionException {
         connect();
         String sql = AppProperties.getProperty("get_hierarchy_sql");
         if (!hierarchy) {
@@ -118,7 +126,7 @@ public class DBModel implements IModel {
     }
 
     public Collection<Task> getTaskList(String column, String type)
-            throws SQLException, NamingException {
+            throws SQLException, ConnectionException {
         return getTaskList(column, type, false);
     }
 
@@ -128,7 +136,7 @@ public class DBModel implements IModel {
      * @throws SQLException  SQL error
      */
     public Collection<Task> getTaskList(boolean hierarchy)
-            throws SQLException, NamingException {
+            throws SQLException, ConnectionException {
         if (!hierarchy) {
             return getTaskList("Task.id_task", "ASC", false);
         } else {
@@ -154,7 +162,7 @@ public class DBModel implements IModel {
         return tasks;
     }
 
-    public Collection<Task> getTaskById(int id) throws SQLException, NamingException {
+    public Collection<Task> getTaskById(int id) throws SQLException, ConnectionException {
         connect();
         PreparedStatement statement = connection.prepareStatement(AppProperties.getProperty("get_task_by_id") + " Task.id_task ASC");
         statement.setInt(1, id);
@@ -165,7 +173,7 @@ public class DBModel implements IModel {
         return tasks;
     }
 
-    public Collection<Task> getTaskByName(String taskName) throws SQLException, NamingException {
+    public Collection<Task> getTaskByName(String taskName) throws SQLException, ConnectionException {
         connect();
         PreparedStatement statement = connection.prepareStatement(AppProperties.getProperty("get_task_by_name") + " Task.id_task ASC");
         statement.setString(1, taskName);
@@ -176,7 +184,7 @@ public class DBModel implements IModel {
         return tasks;
     }
 
-    public Collection<Task> getTaskByUser(String userName) throws SQLException, NamingException {
+    public Collection<Task> getTaskByUser(String userName) throws SQLException, ConnectionException {
         connect();
         PreparedStatement statement = connection.prepareStatement(AppProperties.getProperty("get_task_by_user") + " Task.id_task ASC");
         statement.setString(1, userName);
@@ -187,8 +195,7 @@ public class DBModel implements IModel {
         return tasks;
     }
 
-    public Collection<String> getUserList()
-            throws SQLException, NamingException {
+    public Collection<String> getUserList() throws SQLException, ConnectionException {
         connect();
         Collection<String> users = new TreeSet<String>();
         PreparedStatement statement = connection.prepareStatement(AppProperties.getProperty("get_all_users_sql"));
@@ -214,7 +221,7 @@ public class DBModel implements IModel {
      */
     public void addNewTask(String name, String parent, String user,
             String begin, String end, String status, String descr)
-            throws SQLException, NamingException {
+            throws SQLException, ConnectionException {
 
         connect();
         PreparedStatement statement = connection.prepareStatement(AppProperties.getProperty("add_task_sql"));
@@ -238,7 +245,7 @@ public class DBModel implements IModel {
      * @param id Task id
      * @throws SQLException SQL error
      */
-    public void deleteTask(int id) throws SQLException, NamingException {
+    public void deleteTask(int id) throws SQLException, ConnectionException {
         connect();
         PreparedStatement statement = connection.prepareStatement(AppProperties.getProperty("delete_task_sql"));
         statement.setInt(1, id);
@@ -260,7 +267,7 @@ public class DBModel implements IModel {
      */
     public void modifyTask(int id, String name, String parent, String user,
             String begin, String end, String status, String descr)
-            throws SQLException, NamingException {
+            throws SQLException, ConnectionException {
         connect();
         PreparedStatement statement = connection.prepareStatement(AppProperties.getProperty("modify_task_sql"));
         statement.setString(1, name);
