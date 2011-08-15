@@ -6,9 +6,9 @@
         <input type="text" name="findName" style="width:195px;"/>
         <br/>
         <select name="findKind" style="width:200px;">
-            <option value="1">by id</option>
-            <option value="2">by name</option>
-            <option value="3">by user</option>
+            <option value="by_id">by id</option>
+            <option value="by_name">by name</option>
+            <option value="by_user">by user</option>
         </select>
         <input type="submit" value="Find" /> 
     </form>

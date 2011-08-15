@@ -1,3 +1,4 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!-- add block -->
 
 <div id="basic-modal-content-add">
@@ -29,13 +30,13 @@
 
             <br style="float:none;"/>
             <div class="add-block-label">Begin:</div>
-            <input type="text" name="taskBegin" value="2011-11-17" id="calendarBeginA" readonly />
+            <input type="text" name="taskBegin" value="${today}" id="calendarBeginA" readonly />
 
             <div id="cCallbackBeginA" class="select-free"></div>
 
             <br style="float:none;"/>
             <div class="add-block-label">End:</div>
-            <input type="text" name="taskEnd" value="2011-11-17" id="calendarEndA" readonly />
+            <input type="text" name="taskEnd" value="${today}" id="calendarEndA" readonly />
 
             <div id="cCallbackEndA" class="select-free"></div>
 

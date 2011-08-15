@@ -1,3 +1,4 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!-- modify block -->
 
 <div id="basic-modal-content-modify">
@@ -111,7 +112,7 @@
             <br style="float:none;"/>
             <div class="modify-block-label">Description:</div>
             <br style="float:none;"/>
-            <textarea name="modifyDescription">${modifytask.description}</textarea>
+            <textarea name="modifyDescription">${modifyTask.description}</textarea>
 
             <br/>
             <input type="submit" name="taskModify" value="Modify" id="modifyButton"/>

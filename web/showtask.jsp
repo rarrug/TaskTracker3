@@ -69,6 +69,7 @@
         <c:set var="message" scope="page" value="${sessionScope.message}" />
         <c:set var="taskList" scope="session" value="${sessionScope.taskList}" />
         <c:set var="userList" scope="session" value="${sessionScope.userList}" />
+        <c:set var="today" scope="session" value="${sessionScope.today}" />
 
         <%
             /* Logger */
@@ -108,13 +109,13 @@
             </c:if>
 
             <!-- include pages (search, add task, modify task, confirm dialog)-->
-            <%@include file="search.jsp" %>
-            <%@include file="addtask.jsp" %>
-            <%@include file="confirm.jsp" %>
+            <c:import url="search.jsp" />
+            <c:import url="addtask.jsp" />
+            <c:import url="confirm.jsp" />
 
             <!-- show window if task must be modify (taskId exists in url) -->
             <c:if test="${taskid ne null}">
-                <%@include file="modifytask.jsp" %>
+                <c:import url="modifytask.jsp" />
                 <script type="text/javascript">
                     $(document).ready(function() {
                         $('#basic-modal-content-modify').modal()  
