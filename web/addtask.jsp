@@ -59,7 +59,6 @@
         </form>
     </div> 
 </div>
-
 <div style='display:none;'>
     <img src='im/x.png' alt='' style="border:1px solid white;"/>
 </div>
