@@ -36,9 +36,7 @@ public class ModifyTask implements IAction {
 
             Task task = new Task(id, taskName, taskParent, taskBegin, taskEnd, taskStatus, taskUser, "", taskDescr);
             
-            verifyData(request.getParameter(AppProperties.getProperty("modify_name_param")),
-                    request.getParameter(AppProperties.getProperty("modify_begin_param")),
-                    request.getParameter(AppProperties.getProperty("modify_end_param")));
+            verifyData(task);
            
             DAOFactory.getInstance().modifyTask(task);
             
@@ -67,13 +65,10 @@ public class ModifyTask implements IAction {
         }
     }
 
-    private void verifyData(String name, String begin, String end) throws ParseException {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-        Date beginDate = formatter.parse(begin);
-        Date endDate = formatter.parse(end);
-        if (name == null || "".equals(name)) {
+    private void verifyData(Task task) throws ParseException {
+        if (task.getName() == null || "".equals(task.getName())) {
             throw new ParseException("Task name cannot be empty", 0);
-        } else if (endDate.compareTo(beginDate) == -1) {
+        } else if (task.getEnd().compareTo(task.getBegin()) == -1) {
             throw new ParseException("Wrong date", 0);
         }
     }
