@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejb-jar id="ejb-jar_ID" version="2.1" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/ejb-jar_2_1.xsd">
+    <enterprise-beans>
+        <entity>
+            <display-name>TaskBean</display-name>
+            <ejb-name>Task</ejb-name>
+            <home>ttracker.ejb.task.TaskHome</home>
+            <remote>ttracker.ejb.task.Task</remote>
+            <ejb-class>ttracker.ejb.task.TaskBean</ejb-class>
+            <persistence-type>Bean</persistence-type>
+            <prim-key-class>java.lang.Integer</prim-key-class>
+            <reentrant>false</reentrant>
+            <resource-ref>
+                <res-ref-name>multTTrTest1</res-ref-name>
+                <res-type>javax.sql.DataSource</res-type>
+                <res-auth>Container</res-auth>
+            </resource-ref>
+        </entity>
+        <entity>
+            <display-name>EmpBean</display-name>
+            <ejb-name>Emp</ejb-name>
+            <home>ttracker.ejb.emp.EmpHome</home>
+            <remote>ttracker.ejb.emp.Emp</remote>
+            <ejb-class>ttracker.ejb.emp.EmpBean</ejb-class>
+            <persistence-type>Bean</persistence-type>
+            <prim-key-class>java.lang.Integer</prim-key-class>
+            <reentrant>false</reentrant>
+            <resource-ref>
+                <res-ref-name>multTTrTest1</res-ref-name>
+                <res-type>javax.sql.DataSource</res-type>
+                <res-auth>Container</res-auth>
+            </resource-ref>
+        </entity>
+    </enterprise-beans>
+
+</ejb-jar>
