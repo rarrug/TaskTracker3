@@ -1,7 +1,0 @@
-<!ELEMENT datasources (datasource)> 
-<!ELEMENT datasource (source-name, connection-url, driver-class, user-name, password)> 
-<!ELEMENT source-name ( #PCDATA )> 
-<!ELEMENT connection-url ( #PCDATA )> 
-<!ELEMENT driver-class ( #PCDATA )> 
-<!ELEMENT password ( #PCDATA )> 
-<!ELEMENT user-name ( #PCDATA )>
