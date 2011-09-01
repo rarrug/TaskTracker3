@@ -1,0 +1,160 @@
+html {
+    font-family: "Trebuchet MS", Verdana, Arial;
+    background: #F0FFFF;
+    color: steelblue;
+}
+
+th {
+    color: #4682B4;
+    text-align: center;
+}
+
+a {
+    color: #4682B4;
+    text-align: center;
+}
+
+td {
+    text-align: center;
+}
+
+a:hover {
+    color: #4169E1;
+}
+
+#add-label {
+    width: 100px;
+}
+
+#add-label:hover, #find-label:hover, .menu-link:hover {
+    color:#C1D5E0;
+    cursor:pointer;
+}
+
+.menu-link {
+    color: white;
+    text-decoration: none;
+}
+
+.block-hide {
+    display: none;
+}
+
+.add-block-label, .modify-block-label {
+    width:70px;
+    float:left;
+    margin: 0px;
+}
+
+.block {
+    color: #4682B4;
+    border: 2px solid #4682B4;
+    border-radius: 8px;/* only CSS 3 */
+    padding:10px;
+    margin-bottom: 5px;
+}
+
+#hierar-block {
+    width: 500px;
+}
+
+#find-block {
+    width: 300px;
+}
+
+#content {
+    min-height: 200px;
+    margin-left: 215px;
+}
+
+/* corners*/
+
+.box { 
+    min-width: 200px;
+    background: #4682B4; 
+    color: white;
+    float: left;
+}
+.boxtop { 
+    background: url(../im/ne.gif) no-repeat top right; 
+}
+.boxtop div { 
+    font-size: 0;
+    height: 20px; 
+    background: url(../im/nw.gif) no-repeat top left; 
+}
+.boxbottom { 
+    background: url(../im/se.gif) no-repeat bottom right; 
+}
+.boxbottom div { 
+    font-size: 0;
+    height: 20px; 
+    background: url(../im/sw.gif) no-repeat bottom left; 
+}
+.boxcontent {
+    padding: 0px 20px 0px 20px;
+}
+
+/* end corners ----------- */
+
+#basic-modal-content-modify input, 
+#basic-modal-content-add input {
+    color: #4682B4;
+    width: 195px;
+}
+
+#basic-modal-content-modify select,
+#basic-modal-content-add select {
+    color: #4682B4;
+    width: 200px;
+}
+
+#basic-modal-content-add textarea, 
+#basic-modal-content-modify textarea {
+    color: #4682B4;
+    width: 265px;
+    height: 50px;
+    text-align: left;
+    resize: none;
+}
+
+input#modifyButton, input#addButton {
+    width:100px; 
+    margin-left:170px;
+}
+
+.select-free  {
+    position:absolute;
+    padding:5px;
+    left:40px;
+    top:10px; 
+    z-index:10;
+    overflow:hidden;/*must have*/
+    width:150px;/*must have for any value*/;
+    background: steelblue; 
+}
+.select-free iframe  {
+    display:none;/*sorry for IE5*/
+    display/**/:block;/*sorry for IE5*/
+    position:absolute;/*must have*/
+    top:0px;/*must have*/
+    left:0px;/*must have*/
+    z-index:-1;/*must have*/
+    filter:mask;/*must have*/
+    width:3000px;/*must have for any big value*/
+    height:3000px/*must have for any big value*/;
+}
+
+.successMessage {
+    color: green; 
+    background-color: #F0FFF0; 
+    border: 1px solid green;  
+    padding: 5px;
+}
+
+.failMessage {
+    color: red; 
+    background-color: #FFDAB9; 
+    border: 1px solid red;
+    padding: 5px;
+}
