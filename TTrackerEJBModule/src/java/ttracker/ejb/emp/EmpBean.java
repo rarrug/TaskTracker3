@@ -2,16 +2,19 @@ package ttracker.ejb.emp;
 
 import java.rmi.RemoteException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
 import javax.ejb.EntityContext;
 import javax.ejb.FinderException;
+import javax.ejb.NoSuchEntityException;
 import javax.ejb.RemoveException;
 import javax.sql.DataSource;
-import ttracker.dao.DAOFactory;
 import ttracker.dao.SQLConsts;
 import ttracker.ejb.dept.DeptRecord;
 
@@ -34,7 +37,7 @@ public class EmpBean implements EntityBean {
     public void setName(String name) {
         this.name = name;
     }
-    
+
     public String getJob() {
         return job;
     }
@@ -42,7 +45,7 @@ public class EmpBean implements EntityBean {
     public Integer getId() {
         return id;
     }
-    
+
     public String getDeptName() {
         return dept.getDeptName();
     }
@@ -57,7 +60,15 @@ public class EmpBean implements EntityBean {
         Collection list = null;
         try {
             Connection con = getConnection();
-            list = DAOFactory.getInstance().getAllEmpKeys(con);
+            list = new ArrayList();
+            PreparedStatement st = null;
+            st = con.prepareStatement(SQLConsts.GET_EMP_KEYS);
+            ResultSet rs = st.executeQuery();
+            while (rs.next()) {
+                list.add(new Integer(rs.getInt("id_emp")));
+            }
+            st.close();
+            st = null;
             releaseConnection(con);
         } catch (SQLException ex) {
             throw new FinderException("No employee was found: " + ex.getMessage());
@@ -75,7 +86,15 @@ public class EmpBean implements EntityBean {
 //        System.out.println("ejbFindByPrimaryKey()");
         try {
             Connection con = getConnection();
-            boolean rowExists = DAOFactory.getInstance().isEmpExists(id, con);
+            boolean rowExists = false;
+            PreparedStatement st = con.prepareStatement(SQLConsts.EXISTS_EMP);
+            st.setInt(1, id.intValue());
+            ResultSet rs = st.executeQuery();
+            if (rs.next()) {
+                rowExists = true;
+            }
+            st.close();
+            st = null;
             releaseConnection(con);
             if (!rowExists) {
                 throw new FinderException("No task was found. Id = " + id);
@@ -96,15 +115,23 @@ public class EmpBean implements EntityBean {
         try {
             this.id = (Integer) context.getPrimaryKey();
             Connection con = getConnection();
-            EmpRecord record = DAOFactory.getInstance().selectEmp(id, con);
+            PreparedStatement st = con.prepareStatement(SQLConsts.EMP_INFO_BY_ID);
+            st.setInt(1, this.id.intValue());
+            ResultSet rs = st.executeQuery();
+            if (!rs.next()) {
+                throw new NoSuchEntityException("In selectRow: Row does not exist");
+            }
 
-            this.name = record.empName;
-            this.job = record.job;
-            this.dept = record.dept;
+            this.name = rs.getString("emp_fio");
+            this.job = rs.getString("job");
+            this.dept = new DeptRecord(rs.getInt("id_dept"), rs.getString("dept_name"));
+
+            st.close();
+            st = null;
 
             releaseConnection(con);
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            throw new RemoteException(ex.getMessage());
         }
     }
 
@@ -113,7 +140,7 @@ public class EmpBean implements EntityBean {
     }
 
     public void ejbPassivate() throws EJBException, RemoteException {
-        System.out.println("ejbPassivate()");
+//        System.out.println("ejbPassivate()");
     }
 
     public void setEntityContext(EntityContext context) throws EJBException,
@@ -144,7 +171,9 @@ public class EmpBean implements EntityBean {
     }
 
     /**
-     * Free resources.
+     * Free resources
+     * @param con Connection for free
+     * @throws SQLException 
      */
     private void releaseConnection(Connection con) throws SQLException {
         if (con != null) {

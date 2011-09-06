@@ -1,25 +1,21 @@
 package controller;
 
-import java.rmi.RemoteException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
+import ttracker.dao.DAOFactory;
+import ttracker.dao.exc.TrackerException;
 import ttracker.ejb.emp.EmpRecord;
-import ttracker.dao.SQLConsts;
-import ttracker.ejb.task.TaskHome;
 import ttracker.ejb.task.TaskRecord;
 
 /**
  * Modify task by id
  */
-public class ModifyTask implements IAction {
+public class ModifyTask extends SomethingAction {
 
     /* Logger */
     private static final Logger logger = Logger.getLogger(ModifyTask.class);
@@ -29,11 +25,6 @@ public class ModifyTask implements IAction {
         HttpSession session = request.getSession();
         logger.info("MODIFY TASK");
         try {
-            /* create tasks context */
-            Context initial = new InitialContext();
-            Object objRef = initial.lookup(SQLConsts.JNDI_TASK);
-            TaskHome taskHome = (TaskHome) javax.rmi.PortableRemoteObject.narrow(
-                    objRef, TaskHome.class);
 
             /* get parameters from request */
             Integer id = new Integer(request.getParameter(AppProperties.getProperty("modify_id_param")));
@@ -52,50 +43,14 @@ public class ModifyTask implements IAction {
 
             /* verify and modify data in database */
             verifyData(task);
-            taskHome.modify(task);
-            setNotifyMessage(session, SUCCESS_MESS, "Task sucessfully modified!", null);
+            DAOFactory.getInstance().modifyTask(task);
+            setNotifyMessage(session, logger, SUCCESS_MESS, null, "Task modified", null);
 
-        } catch (RemoteException ex) {
-            setNotifyMessage(session, FAIL_MESS, "Modifing remote exception", ex);
-        } catch (NamingException ex) {
-            setNotifyMessage(session, FAIL_MESS, "Cannot find JNDI name", ex);
-        } catch (NumberFormatException ex) {
-            setNotifyMessage(session, FAIL_MESS, "Incorrect ID: "
-                    + request.getParameter(AppProperties.getProperty("modify_id_param")), ex);
         } catch (ParseException ex) {
-            setNotifyMessage(session, FAIL_MESS, "Incorrect name or dates", ex);
+            setNotifyMessage(session, logger, FAIL_MESS, "Modify exception", "Incorrect input data. Reason: " + ex.getMessage(), ex);
+        } catch (TrackerException ex) {
+            setNotifyMessage(session, logger, FAIL_MESS, "Modify exception", ex.getMessage(), ex);
         }
         return "/index.jsp"; //redirected page path
-    }
-
-    /**
-     * Write notify message to log and to session
-     * @param session Session
-     * @param type Succesfull or fail message const
-     * @param value Message value
-     * @param t Exception object if notify message is fail or null if it is succesfull
-     */
-    private void setNotifyMessage(HttpSession session, int type, String value, Throwable t) {
-        if (type == FAIL_MESS) {
-            session.setAttribute("message", "Modify exception. " + value);
-            session.setAttribute("messageType", "failMessage");
-            logger.error("Modify exception", t);
-        } else {
-            session.setAttribute("message", value);
-            session.setAttribute("messageType", "successMessage");
-        }
-    }
-
-    /**
-     * Check input data
-     * @param task Task object with parameters
-     * @throws ParseException Data not valid
-     */
-    private void verifyData(TaskRecord task) throws ParseException {
-        if (task.getName() == null || "".equals(task.getName())) {
-            throw new ParseException("Task name cannot be empty", 0);
-        } else if (task.getBegin().compareTo(task.getEnd()) == -1) {
-            throw new ParseException("Wrong date", 0);
-        }
     }
 }

@@ -7,9 +7,9 @@ import ttracker.ejb.dept.DeptRecord;
 public class EmpRecord implements Serializable {
     
     public int empId;
-    public String empName;
-    public String job;
-    public DeptRecord dept;
+    private String empName;
+    private String job;
+    private DeptRecord dept;
     
     public EmpRecord(int empId) {
         this.empId = empId;

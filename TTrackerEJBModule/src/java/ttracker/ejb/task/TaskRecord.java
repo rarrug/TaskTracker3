@@ -9,14 +9,14 @@ import ttracker.ejb.emp.EmpRecord;
  */
 public class TaskRecord implements Serializable {
 
-    public Integer id;
-    public String name;
-    public Integer parentId;
-    public Date begin;
-    public Date end;
-    public String status;
-    public String description;
-    public EmpRecord emp;
+    private Integer id;
+    private String name;
+    private Integer parentId;
+    private Date begin;
+    private Date end;
+    private String status;
+    private String description;
+    private EmpRecord emp;
 
     public Date getBegin() {
         return begin;

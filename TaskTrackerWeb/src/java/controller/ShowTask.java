@@ -1,30 +1,23 @@
 package controller;
 
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import javax.ejb.FinderException;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
-import ttracker.ejb.emp.EmpHome;
-
+import ttracker.dao.DAOFactory;
 import ttracker.ejb.task.Task;
-import ttracker.dao.SQLConsts;
-import ttracker.ejb.task.TaskHome;
+import ttracker.dao.exc.TrackerException;
 
 /**
  * Generate task list by request
  */
-public class ShowTask implements IAction {
+public class ShowTask extends SomethingAction {
 
     /* Current index in user list  */
     private static int index;
@@ -37,17 +30,12 @@ public class ShowTask implements IAction {
     public String perform(HttpServletRequest request, HttpServletResponse response) {
         HttpSession session = request.getSession();
         try {
-            /* get context of tasks */
-            Context initial = new InitialContext();
-            Object objRef = initial.lookup(SQLConsts.JNDI_TASK);
-            TaskHome taskHome = (TaskHome) javax.rmi.PortableRemoteObject.narrow(
-                    objRef, TaskHome.class);
 
             /* modify task by id */
             String taskid = request.getParameter(AppProperties.getProperty("modify_req_param"));
             if (taskid != null) {
                 Integer id = new Integer(taskid);
-                session.setAttribute("modifyTask", taskHome.findByPrimaryKey(id));
+                session.setAttribute("modifyTask", DAOFactory.getInstance().getTaskById(id));
             }
 
             /* find by id, name or user or hierarchical view */
@@ -57,7 +45,7 @@ public class ShowTask implements IAction {
 
                 if (AppProperties.getProperty("hierarchical_value").equals(findParameter)) {/* generate hierarchical list */
                     logger.info("HIERARCHICAL SEARCH");
-                    Collection hier = taskHome.findAll(true);
+                    Collection hier = DAOFactory.getInstance().getAllTasks(true);
                     String hStr = buildHirerachicalStructure((List<Task>) hier);
                     session.setAttribute("hierarchyList", hStr);
                     session.setAttribute("hierarchy", "1");
@@ -66,57 +54,32 @@ public class ShowTask implements IAction {
                     if ("by_id".equals(findParameter)) {/* by id */
                         logger.info("FIND BY ID");
                         taskList = new ArrayList();
-                        taskList.add(taskHome.findByPrimaryKey(Integer.parseInt(findValue)));
+                        taskList.add(DAOFactory.getInstance().getTaskById(new Integer(findValue)));
                     } else if ("by_name".equals(findParameter)) {/* by name */
                         logger.info("FIND BY NAME");
-                        taskList = taskHome.findByName(findValue);
+                        taskList = DAOFactory.getInstance().getTaskByName(findValue);
                     } else if ("by_user".equals(findParameter)) {/* by user */
                         logger.info("FIND BY User");
-                        taskList = taskHome.findByEmp(findValue);
+                        taskList = DAOFactory.getInstance().getTaskByEmp(findValue);
                     }
                     session.setAttribute("taskList", taskList);
                 }
             } else {/* build full task list and employee list */
                 logger.debug("UPDATE TASK LIST");
-                session.setAttribute("taskList", taskHome.findAll(false));
-
-                /* create emp context */
-                objRef = initial.lookup(SQLConsts.JNDI_EMP);
-                EmpHome empHome = (EmpHome) javax.rmi.PortableRemoteObject.narrow(
-                        objRef, EmpHome.class);
+                session.setAttribute("taskList", DAOFactory.getInstance().getAllTasks(false));
 
                 /* write data to session */
-                session.setAttribute("userList", empHome.findAll());
+                session.setAttribute("userList", DAOFactory.getInstance().getAllEmps());
                 session.setAttribute("today", new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
             }
 
-        } catch (FinderException ex) {
-            setNotifyMessage(session, FAIL_MESS, "Cannot find object.", ex);
-        } catch (RemoteException ex) {
-            setNotifyMessage(session, FAIL_MESS, "Remote exception.", ex);
-        } catch (NamingException ex) {
-            setNotifyMessage(session, FAIL_MESS, "Cannot find JNDI name.", ex);
+        } catch (TrackerException ex) {
+            setNotifyMessage(session, logger, FAIL_MESS, "Show exception", ex.getMessage(), ex);
         }
         return "/showtask.jsp"; //redirected page path
     }
 
-    /**
-     * Write notify message to log and to session
-     * @param session Session
-     * @param type Succesfull or fail message const
-     * @param value Message value
-     * @param t Exception object if notify message is fail or null if it is succesfull
-     */
-    private void setNotifyMessage(HttpSession session, int type, String value, Throwable t) {
-        if (type == FAIL_MESS) {
-            session.setAttribute("message", "Show exception. " + value);
-            session.setAttribute("messageType", "failMessage");
-            logger.error("Show exception", t);
-        } else {
-            session.setAttribute("message", value);
-            session.setAttribute("messageType", "successMessage");
-        }
-    }
+    
 
     /**
      * Print hierarchical structure of task list to JSP page
@@ -193,4 +156,5 @@ public class ShowTask implements IAction {
             listBuilder.append((s + "</ul>\n"));
         }
     }
+    
 }

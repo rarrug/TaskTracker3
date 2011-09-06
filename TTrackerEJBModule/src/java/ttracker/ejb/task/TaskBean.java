@@ -3,7 +3,11 @@ package ttracker.ejb.task;
 import ttracker.dao.SQLConsts;
 import java.rmi.RemoteException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import javax.ejb.CreateException;
@@ -11,9 +15,10 @@ import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
 import javax.ejb.EntityContext;
 import javax.ejb.FinderException;
+import javax.ejb.NoSuchEntityException;
 import javax.ejb.RemoveException;
 import javax.sql.DataSource;
-import ttracker.dao.DAOFactory;
+import ttracker.ejb.dept.DeptRecord;
 import ttracker.ejb.emp.EmpRecord;
 
 /**
@@ -35,7 +40,7 @@ public class TaskBean implements EntityBean {
     public Integer getId() {
         return id;
     }
-    
+
     public void setId(Integer id) {
         this.id = id;
     }
@@ -107,7 +112,21 @@ public class TaskBean implements EntityBean {
         Collection list = null;
         try {
             Connection con = getConnection();
-            list = DAOFactory.getInstance().getAllTaskKeys(con, hier);
+
+            list = new ArrayList();
+            PreparedStatement st = null;
+            if (hier) {
+                st = con.prepareStatement(SQLConsts.GET_TASK_HIERARCHY);
+            } else {
+                st = con.prepareStatement(SQLConsts.GET_TASK_KEYS);
+            }
+            ResultSet rs = st.executeQuery();
+            while (rs.next()) {
+                list.add(new Integer(rs.getInt("id_task")));
+            }
+            st.close();
+            st = null;
+
             releaseConnection(con);
         } catch (SQLException ex) {
             throw new FinderException("No task was found: " + ex.getMessage());
@@ -125,7 +144,17 @@ public class TaskBean implements EntityBean {
 //        System.out.println("ejbFindByPrimaryKey()");
         try {
             Connection con = getConnection();
-            boolean rowExists = DAOFactory.getInstance().isTaskExists(id, con);
+
+            boolean rowExists = false;
+            PreparedStatement st = con.prepareStatement(SQLConsts.EXISTS_TASK);
+            st.setInt(1, id.intValue());
+            ResultSet rs = st.executeQuery();
+            if (rs.next()) {
+                rowExists = true;
+            }
+            st.close();
+            st = null;
+
             releaseConnection(con);
             if (!rowExists) {
                 throw new FinderException("No task was found. Id = " + id);
@@ -144,11 +173,19 @@ public class TaskBean implements EntityBean {
      * @return List of tasks keys
      * @throws FinderException Cannot find tasks
      */
-    private Collection findByParametr(String param, String sql) throws FinderException {
+    private Collection findByParameter(String param, String sql) throws FinderException {
         Collection list = null;
         try {
             Connection con = getConnection();
-            list = DAOFactory.getInstance().selectTaskByParam(param, con, sql);
+            PreparedStatement st = con.prepareStatement(sql);
+            st.setString(1, param);
+            ResultSet rs = st.executeQuery();
+            list = new ArrayList();
+            while (rs.next()) {
+                list.add(new Integer(rs.getInt("id_task")));
+            }
+            st.close();
+            st = null;
             releaseConnection(con);
         } catch (SQLException ex) {
             throw new FinderException("No task was found: " + ex.getMessage());
@@ -164,7 +201,7 @@ public class TaskBean implements EntityBean {
      */
     public Collection ejbFindByName(String name) throws FinderException {
 //        System.out.println("ejbFindByName()");
-        return findByParametr(name, SQLConsts.SELECT_TASK_BY_NAME);
+        return findByParameter(name, SQLConsts.SELECT_TASK_BY_NAME);
     }
 
     /**
@@ -175,9 +212,9 @@ public class TaskBean implements EntityBean {
      */
     public Collection ejbFindByEmp(String emp) throws FinderException {
 //        System.out.println("ejbFindByName()");
-        return findByParametr(emp, SQLConsts.SELECT_TASK_BY_EMP);
+        return findByParameter(emp, SQLConsts.SELECT_TASK_BY_EMP);
     }
-    
+
     /**
      * Create new task
      * @param task New task object
@@ -185,18 +222,34 @@ public class TaskBean implements EntityBean {
      * @throws CreateException
      * @throws RemoteException 
      */
-    public Integer ejbCreate(TaskRecord task) throws CreateException, RemoteException {
+    public Integer ejbCreate(TaskRecord newTask) throws CreateException, RemoteException {
         Connection con = null;
         Integer taskId = null;
         try {
-            try {
-                con = getConnection();
-                taskId = DAOFactory.getInstance().insertTask(task, con);
-            } finally {
-                releaseConnection(con);
+            con = getConnection();
+            PreparedStatement statement = con.prepareStatement(SQLConsts.INSERT_TASK);
+            statement.setString(1, newTask.getName());
+            if (newTask.getParentId().compareTo(Integer.valueOf(0)) == 0) {
+                statement.setNull(2, java.sql.Types.INTEGER);
+            } else {
+                statement.setInt(2, newTask.getParentId());
             }
+            statement.setString(3, newTask.getEmp().getEmpName());
+            statement.setString(4, new SimpleDateFormat("yyyy-MM-dd").format(newTask.getBegin()));
+            statement.setString(5, new SimpleDateFormat("yyyy-MM-dd").format(newTask.getEnd()));
+            statement.setString(6, newTask.getStatus());
+            statement.setString(7, newTask.getDescription());
+            statement.executeQuery();
+            statement = con.prepareStatement(SQLConsts.GET_TASK_ID_BY_NAME);
+            statement.setString(1, newTask.getName());
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()) {
+                taskId = Integer.valueOf(rs.getInt("id_task"));
+            }
+            statement.close();
+            statement = null;
+            releaseConnection(con);
         } catch (SQLException ex) {
-            ex.printStackTrace();
             throw new CreateException(ex.getMessage());
         }
         return taskId;
@@ -215,10 +268,25 @@ public class TaskBean implements EntityBean {
         //System.out.println("ejbHomeModify()");
         try {
             Connection con = getConnection();
-            DAOFactory.getInstance().updateTask(task, con);
+            PreparedStatement statement = con.prepareStatement(SQLConsts.UPDATE_TASK);
+            statement.setString(1, task.getName());
+            if (task.getParentId() == 0) {
+                statement.setNull(2, java.sql.Types.INTEGER);
+            } else {
+                statement.setInt(2, task.getParentId());
+            }
+            statement.setString(3, task.getEmp().getEmpName());
+            statement.setString(4, new SimpleDateFormat("yyyy-MM-dd").format(task.getBegin()));
+            statement.setString(5, new SimpleDateFormat("yyyy-MM-dd").format(task.getEnd()));
+            statement.setString(6, task.getStatus());
+            statement.setString(7, task.getDescription());
+            statement.setInt(8, task.getId());
+            statement.executeQuery();
+            statement.close();
+            statement = null;
             releaseConnection(con);
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            throw new RemoteException(ex.getMessage());
         }
     }
 
@@ -228,22 +296,31 @@ public class TaskBean implements EntityBean {
 
     public void ejbLoad() throws EJBException, RemoteException {
 //        System.out.println("ejbLoad()");
+        this.id = (Integer) context.getPrimaryKey();
         try {
-            this.id = (Integer) context.getPrimaryKey();
             Connection con = getConnection();
-            TaskRecord record = DAOFactory.getInstance().selectTaskById(id, con);
+            PreparedStatement st = con.prepareStatement(SQLConsts.SELECT_TASK_BY_ID);
+            st.setInt(1, this.id.intValue());
+            ResultSet rs = st.executeQuery();
+            if (!rs.next()) {
+                throw new NoSuchEntityException("In selectRow: Row does not exist");
+            }
 
-            this.name = record.getName();
-            this.parentId = record.getParentId();
-            this.begin = record.getBegin();
-            this.end = record.getEnd();
-            this.status = record.getStatus();
-            this.employee = record.getEmp();
-            this.description = record.getDescription();
+            this.name = rs.getString("task_name");
+            this.parentId = new Integer(rs.getInt("parent_task"));
+            this.begin = rs.getDate("date_begin");
+            this.end = rs.getDate("date_end");
+            this.status = rs.getString("status");
+            this.employee = new EmpRecord(rs.getInt("id_emp"), rs.getString("emp_fio"), rs.getString("job"),
+                    new DeptRecord(rs.getInt("id_dept"), rs.getString("dept_name")));
+            this.description = rs.getString("descr");
+
+            st.close();
+            st = null;
 
             releaseConnection(con);
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            throw new RemoteException(ex.getMessage());
         }
     }
 
@@ -262,10 +339,13 @@ public class TaskBean implements EntityBean {
      * @throws RemoteException 
      */
     public void ejbRemove() throws RemoveException, EJBException, RemoteException {
-//        System.out.println("ejbRemove()");
         try {
             Connection con = getConnection();
-            DAOFactory.getInstance().deleteTask(id, con);
+            PreparedStatement st = con.prepareStatement(SQLConsts.DELETE_TASK);
+            st.setInt(1, this.id.intValue());
+            st.executeQuery();
+            st.close();
+            st = null;
             releaseConnection(con);
         } catch (SQLException ex) {
             throw new RemoveException(ex.getMessage());
@@ -297,13 +377,13 @@ public class TaskBean implements EntityBean {
     }
 
     /**
-     * Free resources.
+     * Free resources
+     * @param con Connection for free
+     * @throws SQLException 
      */
     private void releaseConnection(Connection con) throws SQLException {
         if (con != null) {
             con.close();
         }
     }
-
-    
 }

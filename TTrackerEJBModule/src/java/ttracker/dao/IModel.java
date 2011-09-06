@@ -1,32 +1,30 @@
 package ttracker.dao;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Collection;
-import ttracker.ejb.emp.EmpRecord;
+import ttracker.dao.exc.TrackerException;
+import ttracker.ejb.emp.Emp;
+import ttracker.ejb.task.Task;
 import ttracker.ejb.task.TaskRecord;
 
 public interface IModel {
 
     /* Task methods */
-    boolean isTaskExists(Integer taskId, Connection con) throws SQLException;
+    Task getTaskById(Integer taskId) throws TrackerException;
 
-    TaskRecord selectTaskById(Integer taskId, Connection con) throws SQLException;
+    Collection getTaskByName(String name) throws TrackerException;
+    
+    Collection getTaskByEmp(String emp) throws TrackerException;
 
-    Collection selectTaskByParam(String param, Connection con, String sql) throws SQLException;
+    Collection getAllTasks(boolean hier) throws TrackerException;
 
-    Collection getAllTaskKeys(Connection con, boolean hier) throws SQLException;
+    void addTask(TaskRecord newTask) throws TrackerException;
 
-    Integer insertTask(TaskRecord newTask, Connection con) throws SQLException;
+    void deleteTask(Integer taskId) throws TrackerException;
 
-    void deleteTask(Integer taskId, Connection con) throws SQLException;
-
-    void updateTask(TaskRecord task, Connection con) throws SQLException;
+    void modifyTask(TaskRecord task) throws TrackerException;
 
     /* Employee methods */
-    boolean isEmpExists(Integer empId, Connection con) throws SQLException;
+    Emp getEmpById(Integer empId) throws TrackerException;
 
-    EmpRecord selectEmp(Integer empId, Connection con) throws SQLException;
-
-    Collection getAllEmpKeys(Connection con) throws SQLException;
+    Collection getAllEmps() throws TrackerException;
 }
